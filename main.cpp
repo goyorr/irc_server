@@ -7,7 +7,6 @@ int main(int ac, char **av)
 
     server_c    srv;
 
-    srv.pars(av[1]);
+    srv.pars_port(av[1]);
     srv.init_server(av[1], av[2]);
-    srv.auth_pass();
 }

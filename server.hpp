@@ -20,7 +20,7 @@ class server_c {
             server_c();
             ~server_c();
 
-            std::vector<client_c>        _clients;
+            std::map<int, client_c> clients_map;
 
             void        setPort(std::string tmp);
             void        setPassword(std::string tmp);
@@ -30,9 +30,10 @@ class server_c {
             std::string getPassword() const;
             int         getServer_socket() const;
 
-            void        pars(std::string port);
+            void        pars_port(std::string port);
             void        init_server(std::string tmp_port, std::string tmp_password);
-            void        auth_pass();
+            void        pars_cmd(std::string buffer, int client_socket);
+            // bool        auth_pass();
 };
 
 #endif

@@ -24,6 +24,6 @@ clean:
 		${RM} ${OBJ}
 
 fclean: clean
-		${RM} ${NAME}
+		sleep 1 && ${RM} ${NAME}
 
 re: fclean all
