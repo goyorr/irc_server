@@ -1,0 +1,7 @@
+*.pdf
+bircd
+.vscode
+.DS_Store
+*.o
+ircserv
+*.txt

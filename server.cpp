@@ -53,7 +53,7 @@ void    server_c::init_server(std::string tmp_port, std::string tmp_password) {
     while (true) {
         if (poll(client_c::_disc.data(), client_c::_disc.size(), -1) == -1) {
             std::cerr << "Error: poll" << std::endl;
-            exit (1);
+            break ;
         }
         for (size_t i = 0; i < client_c::_disc.size(); ++i) {
             if (client_c::_disc[i].revents) {
@@ -86,7 +86,7 @@ void    server_c::init_server(std::string tmp_port, std::string tmp_password) {
                         }
                         else if (bytes == -1) {
                             std::cerr << "Error: recv" << std::endl;
-                            exit (1);
+                            break ;
                         }
                     }
                     catch (...) {}
@@ -95,6 +95,7 @@ void    server_c::init_server(std::string tmp_port, std::string tmp_password) {
         }
     }
     close(getServer_socket());
+    exit (1);
 }
 
 void    server_c::pars_cmd(std::string buffer, int client_socket) {
@@ -112,6 +113,19 @@ void    server_c::pars_cmd(std::string buffer, int client_socket) {
     else {
       //pars and only check for PASS, if valid add to map with client_socket as
       //key and value as a new client_c object (usee setClient_socket(client_socket)).
+    }
+}
+
+void    server_c::pars_port(std::string port) {
+    if (port.size() > 5) {
+        std::cerr << "Error: invalid port!" << std::endl;
+        exit (1);
+    }
+    for (size_t i = 0; i < port.size(); i++) {
+        if (!std::isdigit(port[i])) {
+            std::cerr << "Error: invalid port!" << std::endl;
+            exit (1);
+        }
     }
 }
 
@@ -138,16 +152,3 @@ void    server_c::pars_cmd(std::string buffer, int client_socket) {
 //     }
 //     return 0;
 // }
-
-void    server_c::pars_port(std::string port) {
-    if (port.size() > 5) {
-        std::cerr << "Error: invalid port!" << std::endl;
-        exit (1);
-    }
-    for (size_t i = 0; i < port.size(); i++) {
-        if (!std::isdigit(port[i])) {
-            std::cerr << "Error: invalid port!" << std::endl;
-            exit (1);
-        }
-    }
-} 

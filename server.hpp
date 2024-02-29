@@ -15,12 +15,12 @@ class server_c {
             int                                                 _port;
             std::string                                         _password;
             int                                                 _server_socket;
-            std::map<std::string, std::vector<std::string> >    _server_channel_list;
     public:
             server_c();
             ~server_c();
 
-            std::map<int, client_c> clients_map;
+            std::map<int, client_c>                             _clients_map;
+            std::map<std::string, std::vector<std::string> >    _channels_map;
 
             void        setPort(std::string tmp);
             void        setPassword(std::string tmp);
