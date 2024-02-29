@@ -19,8 +19,8 @@ class server_c {
             server_c();
             ~server_c();
 
-            std::map<int, client_c>                             _clients_map;
-            std::map<std::string, std::vector<std::string> >    _channels_map;
+            std::map<int, client_c>                             clients_map;
+            std::map<std::string, std::vector<std::string> >    channels_map;
 
             void        setPort(std::string tmp);
             void        setPassword(std::string tmp);
