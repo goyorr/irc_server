@@ -1,4 +1,4 @@
-#ifndef SERVER_HPP
+#if !SERVER_HPP
 #define SERVER_HPP
 
 #include "client.hpp"
@@ -12,28 +12,31 @@
 
 class server_c {
     private:
-            int                                                 _port;
-            std::string                                         _password;
-            int                                                 _server_socket;
+            uint16_t    _port;
+            std::string _password;
+            uint16_t    _server_socket;
     public:
             server_c();
             ~server_c();
 
-            std::map<int, client_c>                             clients_map;
+            std::map<std::string, client_c>                     registered_clients_map;
+            std::map<uint16_t, client_c>                        authed_clients_map;
             std::map<std::string, std::vector<std::string> >    channels_map;
 
-            void        setPort(std::string tmp);
-            void        setPassword(std::string tmp);
-            void        setServer_socket(int tmp);
+            void                setPort(const std::string &tmp);
+            void                setPassword(const std::string &tmp);
+            void                setServer_socket(const uint16_t &tmp);
 
-            int         getPort() const;
-            std::string getPassword() const;
-            int         getServer_socket() const;
+            uint16_t            getPort() const;
+            uint16_t            getServer_socket() const;
+            const std::string   getPassword() const;
 
-            void        pars_port(std::string port);
-            void        init_server(std::string tmp_port, std::string tmp_password);
-            void        pars_cmd(std::string buffer, int client_socket);
-            // bool        auth_pass();
+            void                pars_port(const std::string &port);
+            void                init_server(const std::string &tmp_port, const std::string &tmp_password);
+
+            void                pass_cmd(const std::string &buffer, const uint16_t &client_socket);
+            void                msg_cmd(const std::string &buffer, const uint16_t &client_socket);
+
 };
 
 #endif
