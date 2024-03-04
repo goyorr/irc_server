@@ -39,7 +39,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     int32_t     tmp_client_socket;
     int32_t     non_block;
     int32_t     tmp_socket;
-    ssize_t bytes;
+    ssize_t     bytes;
 
     setPort(tmp_port);
     setPassword(tmp_password);
@@ -106,7 +106,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                         if (bytes >= 1) {
                             std::cout << "data from socket #" << client_c::_disc[i].fd << ": " << buffer;
                             //call pars_cmd() and from there call correct command.
-                            server_c::pass_cmd(buffer, client_c::_disc[i].fd);
+                            server_c::pars_cmd(buffer, client_c::_disc[i].fd);
                         }
                         else if (bytes == 0) {
                             if (close(client_c::_disc[i].fd) == -1)
@@ -140,68 +140,44 @@ void    server_c::pars_port(const std::string &port) {
     }
 }
 
-void    server_c::msg_cmd(const std::string &buffer, const uint16_t &client_socket) {
-    (void)buffer;
-    // std::map<uint16_t, client_c>::iterator it = authed_clients_map.find(client_socket);
-    authed_clients_map.at(client_socket).setClient_nick("lmao");
-}
+// void    server_c::msg_cmd(const std::string &buffer, const uint16_t &client_socket) {
+//     (void)buffer;
+//     // std::map<uint16_t, client_c>::iterator it = authed_clients_map.find(client_socket);
+//     authed_clients_map.at(client_socket).setClient_nick("lmao");
+// }
 
-void    server_c::pass_cmd(const std::string &buffer, const uint16_t &client_socket) {
-    uint16_t    i = 0;
-    while (buffer[i] == ' ')
-        i++;
-    std::string str = &buffer[i];
-    std::string str3 = str.substr(0, 5);
-    if (str3 != "PASS ")
-        return ;
-    std::string str1 = buffer.substr(i + 5, buffer.size());
-    i = 0;
-    while (str1[i] == ' ')
-        i++;
-    if (!std::isprint(str1[i]))
-        return ;
-    while (str1[i] != ' ')
-        i++;
-    while (str1[i] == ' ')
-        i++;
-    if (std::isprint(str1[i]))
-        return ;
+// void    server_c::pass_cmd(const std::string &buffer, const uint16_t &client_socket) {
+//     uint16_t    i = 0;
+//     while (buffer[i] == ' ')
+//         i++;
+//     std::string str = &buffer[i];
+//     std::string str3 = str.substr(0, 5);
+//     if (str3 != "PASS ")
+//         return ;
+//     std::string str1 = buffer.substr(i + 5, buffer.size());
+//     i = 0;
+//     while (str1[i] == ' ')
+//         i++;
+//     if (!std::isprint(str1[i]))
+//         return ;
+//     while (str1[i] != ' ')
+//         i++;
+//     while (str1[i] == ' ')
+//         i++;
+//     if (std::isprint(str1[i]))
+//         return ;
 
-    i = 0;
-    while (str1[i] == ' ')
-        i++;
-    int i1 = i;
-    while (str1[i1] != ' ')
-        i1++;
+//     i = 0;
+//     while (str1[i] == ' ')
+//         i++;
+//     int i1 = i;
+//     while (str1[i1] != ' ')
+//         i1++;
 
 
 
-    str1 = str1.substr(i, i1);
-    if (str1 == getPassword() || str1 == getPassword() + "\0\n"
-        || str1 == getPassword() + "\n" || str1 == getPassword() + "\r\n"
-        || str1 == getPassword() + "\r") {
-        client_c    client;
 
-        //replace later (make 2 maps one initialy to have users who havnt registereg with nick yet and other one with; the main one with nick names as the key).
-        // std::string s = std::to_string(client_socket);
-        // if (clients_map.find(client_socket) != clients_map.end())
-        if (authed_clients_map.find(client_socket) != authed_clients_map.end())
-        {
-            send(client_socket, "Already authenticated.\n", 23, 0);
-            msg_cmd(buffer, client_socket);
-            std::cout << authed_clients_map.at(client_socket).getClient_nick() << "\n";
-        }
-        else {
-            // clients_map[client_socket] = client;
-            authed_clients_map[client_socket] = client;
-            std::cout << "socket #" << client_socket << " authenticated successfully." << std::endl;
-            if (send(client_socket, "Welcome to IRC server...\n",  25, 0) == -1) {
-                std::cerr << "Error: send." << std::endl;
-                exit (1);
-            }
-        }
-    }
-}
+
 
 #ifdef NOTES
 

@@ -1,6 +1,6 @@
 NAME = ircserv
 
-SRC = main.cpp server.cpp client.cpp
+SRC = main.cpp server.cpp client.cpp Parse_registration.cpp
 
 HEADER = server.hpp client.hpp
 

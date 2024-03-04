@@ -20,7 +20,7 @@ class server_c {
             ~server_c();
 
             std::map<std::string, client_c>                     registered_clients_map;
-            std::map<uint16_t, client_c>                        authed_clients_map;
+            std::map<uint16_t, int>                            authed_clients_map;   // socket , isauthorised
             std::map<std::string, std::vector<std::string> >    channels_map;
 
             void                setPort(const std::string &tmp);
@@ -34,7 +34,8 @@ class server_c {
             void                pars_port(const std::string &port);
             void                init_server(const std::string &tmp_port, const std::string &tmp_password);
 
-            void                pass_cmd(const std::string &buffer, const uint16_t &client_socket);
+            void                pars_cmd(const std::string &buffer, const uint16_t &client_socket);
+            
             void                msg_cmd(const std::string &buffer, const uint16_t &client_socket);
 
 };
