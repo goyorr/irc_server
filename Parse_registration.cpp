@@ -40,7 +40,7 @@ std::pair<int, std::string> regi_parse(std::string str, int flag)
         i++;
     }
     std::string pre = str.substr(tmp, i - tmp);
-    if (strcmp(pre.c_str(), "PASS"))
+    if (strcmp(pre.c_str(), cmd.c_str()))
     {
         res.first = 1; res.second = pre;
         return (res);
@@ -75,6 +75,8 @@ std::pair<int, std::string> regi_parse(std::string str, int flag)
 
 void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_socket)
 {
+
+    client_c _client;
     if (authed_clients_map.find(client_socket) != authed_clients_map.end()) 
     {
         // if (registered_clients_map.find("?"/*nick name from buffer*/) != registered_clients_map.end()) 
@@ -84,29 +86,14 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
             //pars then check for all commands normaly.
             //check for all commands normaly (already set pass, nick, user?).
         }
-        else 
+
+        // NICKNAME & USER
+            //USER
+        else if (_client.getClient_nick() != "_Default_")
         {
-            //still needs to be registered (only check nick and user?).
-            std::pair<int , std::string> nickpair = regi_parse(buffer, 1);
-            if (!nickpair.first) {
-                client_c _client;
-
-                _client.setClient_nick(nickpair.second);
-                registered_clients_map[nickpair.second] = _client;
-            }
-            else {
-                if (nickpair.first == 1)
-                    std::cerr << nickpair.second << " :Unknown comand" << std::endl;
-                else if (nickpair.first == 2) // find appropriate Error Msg.
-                    std::cerr << nickpair.second << " :Not enough parameters" << std::endl;
-                else if (nickpair.first == 3)
-                    std::cerr << nickpair.second << " :Too many parameters" << std::endl;
-                return ;
-            }
-
-            std::pair<int , std::string> userpair = regi_parse(buffer, 2);
-            if (!userpair.first) {
-                client_c _client;
+            std::pair <int , std::string> userpair = regi_parse(buffer, 2);
+            if (!userpair.first) 
+            {
                 _client.setClient_user(userpair.second);
                 registered_clients_map[userpair.second] = _client;
             }
@@ -119,11 +106,43 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
                     std::cerr << userpair.second << " :Too many parameters" << std::endl;
                 return ;
             }
-
-            if ((registered_clients_map[nickpair.second].getClient_nick()) != "_Default_"  && registered_clients_map[userpair.second].getClient_user() != "_Default_")
-                authed_clients_map[client_socket] = 2;
         }
+            // NICKNAME 
+        else 
+        {
+                //still needs to be registered (only check nick and user?).
+                std::pair<int , std::string> nickpair = regi_parse(buffer, 1);
+                std::cout << "fr : |" << nickpair.first << "|" << std::endl;
+                std::cout << "sc : |" << nickpair.second << "|" << std::endl;
+                if (!nickpair.first) {
+
+                puts("BRO");
+
+                    _client.setClient_nick(nickpair.second);
+                    std::cout << "clients nickname : |" << _client.getClient_nick() << "|" << std::endl;
+                    registered_clients_map[nickpair.second] = _client;
+                    _client.setClient_user(nickpair.second);
+                    registered_clients_map[nickpair.second] = _client;
+                }
+                else {
+                    if (nickpair.first == 1)
+                    {
+                        puts("1");
+                        std::cerr << nickpair.second << " :Unknown comand" << std::endl;
+                    }
+                    else if (nickpair.first == 2) // find appropriate Error Msg.
+                        std::cerr << nickpair.second << " :Not enough parameters" << std::endl;
+                    else if (nickpair.first == 3)
+                        std::cerr << nickpair.second << " :Too many parameters" << std::endl;
+                    return ;
+                }
+            }
+
+            // if ((registered_clients_map[nickpair.second].getClient_nick()) != "_Default_"  && registered_clients_map[userpair.second].getClient_user() != "_Default_")
+            //     authed_clients_map[client_socket] = 2;
     }
+
+    // NOT AUTH (PASS UNTRUE)
     else {
         std::pair<int , std::string> pairpass = regi_parse(buffer, 0);
         if (!pairpass.first) {
