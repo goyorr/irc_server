@@ -8,6 +8,7 @@ client_c::client_c() {
         _client_real_name = "_Default_";
         _client_socket = -1;
         _registered = false;
+        _authed = false;
 }
 
 client_c::~client_c() {
@@ -32,7 +33,9 @@ int     client_c::getClient_socket() const {
 bool     client_c::getRegistered() const {
         return _registered;
 }
-
+bool    client_c::getAuth() const {
+        return _authed;
+}
 
 void    client_c::setClient_nick(std::string tmp) {
         _client_nick = tmp;
@@ -52,4 +55,8 @@ void    client_c::setClient_socket(int tmp) {
 
 void    client_c::setRegistered(bool con) {
         _registered = con;
+}
+
+void    client_c::setAuth(bool tmp) {
+        _authed = tmp;
 }

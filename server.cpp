@@ -112,8 +112,8 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                             if (close(client_c::_disc[i].fd) == -1)
                                 return std::cerr << "Error: close." << std::endl, (void)NULL;
                             std::cout << "Socket #" << client_c::_disc[i].fd << " closed!" << std::endl;
-                            if (authed_clients_map.find(client_c::_disc[i].fd) != authed_clients_map.end())
-                                authed_clients_map.erase(client_c::_disc[i].fd);
+                            if (clients_map.find(client_c::_disc[i].fd) != clients_map.end())
+                                clients_map.erase(client_c::_disc[i].fd);
                             client_c::_disc.erase(client_c::_disc.begin() + i);
                         }
                         std::cout << std::flush;
@@ -127,65 +127,131 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
         std::cerr << "Error: close." << std::endl;
 }
 
-void    server_c::pars_port(const std::string &port) {
-    if (port.size() > 5) {
-        std::cerr << "Error: invalid port!" << std::endl;
-        exit (1);
-    }
-    for (size_t i = 0; i < port.size(); i++) {
-        if (!std::isdigit(port[i])) {
-            std::cerr << "Error: invalid port!" << std::endl;
-            exit (1);
+void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_socket) {
+    if (clients_map.find(client_socket) != clients_map.end()) {
+        if (clients_map[client_socket].getRegistered()) {
+            //pars then check for all commands normaly.
+            //check for all commands normaly.
+
+            //if NICK is used again just check for it then change the nickname (check socket then use setNick_name()).
+            //if user/real name used just change it from the default (nickname).
+
+            //ex:if its PRIVMSG.
+            priv_msg(buffer, client_socket);
+
+            // join(buffer, client_socket);
+            // nick(buffer, client_socket);
+            // user(buffer, client_socket);
         }
+        //only enter NICK once then use block above if used again (to change).
+        else if (!clients_map[client_socket].getRegistered() && clients_map[client_socket].getAuth())
+            regi_user(buffer, client_socket);
+    }
+    //only auth once.
+    else
+        auth_user(buffer, client_socket);
+}
+
+void    server_c::regi_user(const std::string &buffer, const uint16_t &client_socket) {
+    std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
+
+    if (!nickpair.first) {
+        clients_map[client_socket].setClient_nick(nickpair.second);
+        clients_map[client_socket].setClient_user(nickpair.second);
+        clients_map[client_socket].setClient_real_name(nickpair.second);
+        clients_map[client_socket].setRegistered(true);
+    }
+    else {
+        if (nickpair.first == 1)
+            std::cerr << nickpair.second << " :Unknown comand" << std::endl;
+        else if (nickpair.first == 2) // find appropriate Error Msg.
+            std::cerr << nickpair.second << " :Not enough parameters" << std::endl;
+        else if (nickpair.first == 3)
+            std::cerr << nickpair.second << " :Too many parameters" << std::endl;
+        return ;
     }
 }
 
-// void    server_c::msg_cmd(const std::string &buffer, const uint16_t &client_socket) {
-//     (void)buffer;
-//     // std::map<uint16_t, client_c>::iterator it = authed_clients_map.find(client_socket);
-//     authed_clients_map.at(client_socket).setClient_nick("lmao");
-// }
+void    server_c::auth_user(const std::string &buffer, const uint16_t &client_socket) {
+    std::pair<uint16_t, std::string> pairpass = regi_parse(buffer, 0);
 
-// void    server_c::pass_cmd(const std::string &buffer, const uint16_t &client_socket) {
-//     uint16_t    i = 0;
-//     while (buffer[i] == ' ')
-//         i++;
-//     std::string str = &buffer[i];
-//     std::string str3 = str.substr(0, 5);
-//     if (str3 != "PASS ")
-//         return ;
-//     std::string str1 = buffer.substr(i + 5, buffer.size());
-//     i = 0;
-//     while (str1[i] == ' ')
-//         i++;
-//     if (!std::isprint(str1[i]))
-//         return ;
-//     while (str1[i] != ' ')
-//         i++;
-//     while (str1[i] == ' ')
-//         i++;
-//     if (std::isprint(str1[i]))
-//         return ;
+    if (!pairpass.first) {
+        if (pairpass.second == getPassword()) {
+            client_c cln;
+            cln.setAuth(true);
+            cln.setClient_socket(client_socket);
+            clients_map[client_socket] = cln;
+            std::cout << "socket #" << client_socket << " authenticated successfully." << std::endl;
+            if (send(client_socket, "Welcome to IRC server...\n",  25, 0) == -1) {
+                std::cerr << "Error: send." << std::endl;
+                exit (1);
+            }
+        }
+    }
+    else {
+    if (pairpass.first == 1)
+        std::cerr << pairpass.second << " :Unknown comand" << std::endl;
+    else if (pairpass.first == 2) // find appropriate Error Msg.
+        std::cerr << pairpass.second << " :Not enough parameters" << std::endl;
+    else if (pairpass.first == 3)
+        std::cerr << pairpass.second << " :Too many parameters" << std::endl;
+    }
+}
 
-//     i = 0;
-//     while (str1[i] == ' ')
-//         i++;
-//     int i1 = i;
-//     while (str1[i1] != ' ')
-//         i1++;
+void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_socket) {
+    //pars PRIVMSG 1st pair:target 2nd:message.
+    //remove after.
+    (void)buffer;
+    (void)client_socket;
+    #ifdef NOT_MADE_YET
 
+    std::pair<std::string, std::string> msgpair = prvmsg_parse(buffer, 3);
+    //if PRIVMSG is for a channel.
+    if (msgpair.first[0] == '#') {
+        std::map<std::string, std::vector<uint16_t> > ::iterator it;
 
+        for (it = channels_map.begin(); it != channels_map.end(); ++it) {
+        //check if channels exists.
+            if (it->first == msgpair.first) {
+                for (int i = 0; channels_map[msgpair.first].size(); i++)
+                    send(channels_map[msgpair.first][0], msgpair.second.c_str(), msgpair.second.size(), 0);
+                return ;
+            }
+        }
+        //return some error message (no user found).
+        return ;
+    }
+    //if its for a user.
+    if (msgpair.first != "0") {
+        std::map<uint16_t, client_c>::iterator it;
 
+        for (it = clients_map.begin(); it != clients_map.end(); ++it) {
+            if (clients_map[it->first].getClient_nick() == msgpair.first) {
+                send(clients_map[it->first].getClient_socket(), msgpair.second.c_str(), msgpair.second.size(), 0);
+                return ;
+            }
+        }
+        //return some error message (no user found).
+        return ;
+    }
+    //error.
+    else {
+        if (msgpair.first == "1")
+            std::cerr << msgpair.second << " :Unknown comand" << std::endl;
+        else if (msgpair.first == "2") // find appropriate Error Msg.
+            std::cerr << msgpair.second << " :Not enough parameters" << std::endl;
+        else if (msgpair.first == "3")
+            std::cerr << msgpair.second << " :Too many parameters" << std::endl;
+        return ;
+    }
 
+    #endif
+}
 
 
 #ifdef NOTES
 
 kernel will automatically bind the socket to a suitable port number when you try to connect or send. 
-
-
-
-
 
  Sockets in C:
 
