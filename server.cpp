@@ -1,5 +1,5 @@
 #include "server.hpp"
-
+#include <set>
 server_c::server_c() {
 }
 
@@ -198,56 +198,74 @@ void    server_c::auth_user(const std::string &buffer, const uint16_t &client_so
     }
 }
 
+
+
+//privmsg to channel
+// void    server_c::msg_to_channel(const std::string &buffer, const uint16_t &client_socket) {
+//     std::map<std::string, std::vector<uint16_t> > ::iterator it;
+
+//     for (it = channels_map.begin(); it != channels_map.end(); ++it) {
+//     //check if channels exists.
+//         if (it->first == msgpair.first) {
+//             for (int i = 0; channels_map[msgpair.first].size(); i++)
+//                 send(channels_map[msgpair.first][0], msgpair.second.c_str(), msgpair.second.size(), 0);
+//             return ;
+//         }
+//     }
+// }
+
+//privmsgto user
+// void    server_c::msg_to_user(const std::string &buffer, const uint16_t &client_socket) {
+//     std::map<uint16_t, client_c>::iterator it;
+
+//     for (it = clients_map.begin(); it != clients_map.end(); ++it) {
+//         if (clients_map[it->first].getClient_nick() == msgpair.first) {
+//             send(clients_map[it->first].getClient_socket(), msgpair.second.c_str(), msgpair.second.size(), 0);
+//             return ;
+//         }
+//     }
+//     //return some error message (no user found).
+//     return ;
+// }
+
+
 void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_socket) {
-    //pars PRIVMSG 1st pair:target 2nd:message.
-    //remove after.
-    (void)buffer;
-    (void)client_socket;
-    #ifdef NOT_MADE_YET
+    std::pair<std::vector<std::string>, std::string> msgpair = prvmsg_parse(buffer, 3);
 
-    std::pair<std::string, std::string> msgpair = prvmsg_parse(buffer, 3);
-    //if PRIVMSG is for a channel.
-    if (msgpair.first[0] == '#') {
-        std::map<std::string, std::vector<uint16_t> > ::iterator it;
-
-        for (it = channels_map.begin(); it != channels_map.end(); ++it) {
-        //check if channels exists.
-            if (it->first == msgpair.first) {
-                for (int i = 0; channels_map[msgpair.first].size(); i++)
-                    send(channels_map[msgpair.first][0], msgpair.second.c_str(), msgpair.second.size(), 0);
-                return ;
+    if (!msgpair.first.empty()) {
+        std::vector<uint16_t> pool;
+        for (size_t i = 0; i < msgpair.first.size(); i++) {
+            if (msgpair.first[i][0] == '#') {
+                if (channels_map.find(msgpair.first[i]) != channels_map.end()) {
+                    pool.insert(pool.end(), channels_map[msgpair.first[i]].begin(), channels_map[msgpair.first[i]].end());
+                    msgpair.first.erase(msgpair.first.begin() + i);
+                    --i;
+                }
+                else {
+                    std::string message = "403 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :No such channel";
+                    send(client_socket, message.c_str(), message.size(), 0);
+                }
+            }
+            else {
+                for (size_t j = 0; j < clients_map.size(); j++) {
+                    if (clients_map[j].getClient_nick() == msgpair.first[i]) {
+                        pool.push_back(i);
+                        break ;
+                    }
+                }
+                std::string message = "401 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :No such nick";
+                if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
             }
         }
-        //return some error message (no user found).
-        return ;
-    }
-    //if its for a user.
-    if (msgpair.first != "0") {
-        std::map<uint16_t, client_c>::iterator it;
+        std::set<uint16_t> betterPool(pool.begin(), pool.end());
 
-        for (it = clients_map.begin(); it != clients_map.end(); ++it) {
-            if (clients_map[it->first].getClient_nick() == msgpair.first) {
-                send(clients_map[it->first].getClient_socket(), msgpair.second.c_str(), msgpair.second.size(), 0);
-                return ;
-            }
+        for (std::set<uint16_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
+            if (send(*it, msgpair.second.c_str(), msgpair.second.size(), 0) == -1)
+                std::cerr << "Error: send." << std::endl;
         }
-        //return some error message (no user found).
-        return ;
     }
-    //error.
-    else {
-        if (msgpair.first == "1")
-            std::cerr << msgpair.second << " :Unknown comand" << std::endl;
-        else if (msgpair.first == "2") // find appropriate Error Msg.
-            std::cerr << msgpair.second << " :Not enough parameters" << std::endl;
-        else if (msgpair.first == "3")
-            std::cerr << msgpair.second << " :Too many parameters" << std::endl;
-        return ;
-    }
-
-    #endif
 }
-
 
 #ifdef NOTES
 
