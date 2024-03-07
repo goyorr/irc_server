@@ -1,15 +1,6 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <iostream>
-#include <map>
-#include <vector>
-#include <algorithm>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <poll.h>
-
 class client_c {
     private:
             std::string                 _client_nick;
@@ -43,8 +34,6 @@ class client_c {
             void                        setAuth(bool tmp);
             void                        setRegUser(bool tmp);
             void                        setRegNick(bool tmp);
-
-
 };
 
 #endif

@@ -1,5 +1,5 @@
-#include "server.hpp"
-#include <set>
+#include "./headers/includes.h"
+
 server_c::server_c() {
 }
 
@@ -134,19 +134,26 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
                 std::cerr << "Error: send." << std::endl;
         }
         else if (cmd == "NICK") {
-            //pars and check for duplicate.(return nick 1st param)
             std::string message;
+            std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
 
-            if (valid) {
-                message = ":" + clients_map[client_socket].getClient_nick() + " NICK " + newNick + "\n";
-                clients_map[client_socket].setClient_nick(newNick);
+            if (!nickpair.first) {
+                for (size_t i = 0; i < clients_map.size(); i++) {
+                    if (nickpair.second == clients_map[i].getClient_nick()) {
+                    std::string err = ":" + nickpair.second + ":Nickname is already in use\n";
+                    if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+                        std::cerr << "Error: send." << std::endl;
+                    return ;
+                    }
+                }
+                message = ":" + clients_map[client_socket].getClient_nick() + " NICK " + nickpair.second + "\n";
+                clients_map[client_socket].setClient_nick(nickpair.second);
             }
-            else if (already in use)
-                message = ":" + clients_map[client_socket].getClient_nick() + " " + newNick + ":Nickname is already in use\n";
-            else if (no nick specified)
+            else if (nickpair.first == 2) {
                 message = "461 " + clients_map[client_socket].getClient_nick() + " NICK :Not enough parameters\n";
-            if (send(client_socket, message.c_str(), message.size(), 0) == -1)
-                std::cerr << "Error: send." << std::endl;
+                if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
+            }
         }
         else if (cmd == "JOIN")
             std::cout << "join function" << std::endl;
@@ -160,12 +167,12 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
         std::string cmd = select_cmd(buffer);
 
         if (cmd == "USER")
-            user_real(buffer, client_socket);
+            reg_user(buffer, client_socket);
         else if (cmd == "NICK")
-            regi_user(buffer, client_socket);
+            reg_nick(buffer, client_socket);
         else if (cmd == "PASS") {
             if (!clients_map[client_socket].getAuth())
-                auth_user(buffer, client_socket);
+                reg_pass(buffer, client_socket);
         }
         if (clients_map.find(client_socket) != clients_map.end() && clients_map[client_socket].getAuth()
             && clients_map[client_socket].getRegNick() && clients_map[client_socket].getRegUser()) {
@@ -179,7 +186,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
     }
 }
 
-void    server_c::user_real(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::reg_user(const std::string &buffer, const uint16_t &client_socket) {
     std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
 
     if (!nickpair.first) {
@@ -190,7 +197,7 @@ void    server_c::user_real(const std::string &buffer, const uint16_t &client_so
         }
         clients_map[client_socket].setClient_user(nickpair.second);
         clients_map[client_socket].setClient_real_name(nickpair.second);
-        clients_map[client_socket     ].setRegUser(true);
+        clients_map[client_socket].setRegUser(true);
     }
     else {
         std::string err;
@@ -203,11 +210,11 @@ void    server_c::user_real(const std::string &buffer, const uint16_t &client_so
     }
 }
 
-void    server_c::regi_user(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::reg_nick(const std::string &buffer, const uint16_t &client_socket) {
     std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
 
     if (!nickpair.first) {
-        for (int i = 0; i < clients_map.size(), i++;) {
+        for (size_t i = 0; i < clients_map.size(); i++) {
             if (nickpair.second == clients_map[i].getClient_nick()) {
                 std::string err = ":" + nickpair.second + ":Nickname is already in use\n";
                 if (send(client_socket, err.c_str(), err.size(), 0) == -1)
@@ -234,7 +241,7 @@ void    server_c::regi_user(const std::string &buffer, const uint16_t &client_so
     }
 }
 
-void    server_c::auth_user(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::reg_pass(const std::string &buffer, const uint16_t &client_socket) {
     std::pair<uint16_t, std::string> pairpass = regi_parse(buffer, 0);
 
     std::string err;

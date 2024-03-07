@@ -1,15 +1,6 @@
 #if !SERVER_HPP
 #define SERVER_HPP
 
-#include "client.hpp"
-#include <iostream>
-#include <map>
-#include <vector>
-#include <algorithm>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-
 class server_c {
     private:
                 uint16_t    _port;
@@ -36,17 +27,11 @@ class server_c {
 
                 void                pars_cmd(const std::string &buffer, const uint16_t &client_socket);
 
-                void                auth_user(const std::string &buffer, const uint16_t &client_socket);
-                void                regi_user(const std::string &buffer, const uint16_t &client_socket);
+                void                reg_pass(const std::string &buffer, const uint16_t &client_socket);
+                void                reg_user(const std::string &buffer, const uint16_t &client_socket);
+                void                reg_nick(const std::string &buffer, const uint16_t &client_socket);
 
                 void                priv_msg(const std::string &buffer, const uint16_t &client_socket);
-                void                user_real(const std::string &buffer, const uint16_t &client_socket);
 };
 
-std::pair<int, std::string>                         regi_parse(std::string str, int flag);
-std::pair<std::vector<std::string>, std::string >   prvmsg_parse(std::string buffer);
-
-int                                                 is_ws(int c);
-int                                                 is_end(std::string str, int *i);
-std::string                                         select_cmd(std::string buffer);
 #endif
