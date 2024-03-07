@@ -84,3 +84,59 @@ void    server_c::pars_port(const std::string &port) {
         }
     }
 }
+
+std::pair<std::vector<std::string>, std::string > prvmsg_parse(std::string buffer)
+{
+    std::pair <std::vector<std::string>, std::string> res;
+    std::string msg;
+    std::string tmp;
+    size_t pos = 0;
+
+    int i = 0;
+    while(!is_ws(buffer[i]))
+        i++;
+    while(is_ws(buffer[i]))
+        i++;
+    if (is_end(buffer, &i))
+        return res;
+    pos = i;
+    while(buffer[i] && !is_ws(buffer[i]))
+        i++;
+    tmp = buffer.substr(pos, i - pos);
+    while(is_ws(buffer[i]))
+        i++;
+    if (is_end(buffer, &i))
+        return (res);
+        pos = i;
+        while(!is_end(buffer, &i))
+            i++;
+        msg = buffer.substr(pos, i - pos);
+        res.second = msg;
+        i = 0;
+        while(!is_end(tmp, &i))
+        {
+            pos = tmp.find(',');
+            if (pos == std::string::npos)
+            {
+                res.first.push_back(tmp.substr(i, tmp.size() - i));
+                break ;
+            }
+            res.first.push_back(tmp.substr(i, pos - i));
+            tmp = strchr(tmp.c_str(), ',');
+            tmp.erase(tmp.begin());
+        }
+    return (res);
+}
+
+std::string select_cmd(std::string buffer)
+{
+    int i = 0;
+    while (is_ws(buffer[i]))
+        i++;
+    int pos = i;
+    while (!is_ws(buffer[i]) && !is_end(buffer, &i))
+        i++;
+    std::string cmd = buffer.substr(pos, i - pos);
+
+    return cmd;
+}

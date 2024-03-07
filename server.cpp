@@ -30,10 +30,6 @@ uint16_t server_c::getServer_socket() const {
     return _server_socket;
 }
 
-/*
-after getting buffer call func(), pass buffer, parse it then call right function (PASS, PRIVMSG, JOIN, etc...)
-*/
-
 void    server_c::init_server(const std::string &tmp_port, const std::string &tmp_password) {
     struct      sockaddr_in sockAddr;
     int32_t     tmp_client_socket;
@@ -105,7 +101,6 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                         buffer[bytes] = '\0';
                         if (bytes >= 1) {
                             std::cout << "data from socket #" << client_c::_disc[i].fd << ": " << buffer;
-                            //call pars_cmd() and from there call correct command.
                             server_c::pars_cmd(buffer, client_c::_disc[i].fd);
                         }
                         else if (bytes == 0) {
@@ -128,46 +123,113 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
 }
 
 void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_socket) {
-    if (clients_map.find(client_socket) != clients_map.end()) {
-        if (clients_map[client_socket].getRegistered()) {
-            //pars then check for all commands normaly.
-            //check for all commands normaly.
+    if (clients_map[client_socket].getRegistered()) {
+        std::string cmd = select_cmd(buffer);
 
-            //if NICK is used again just check for it then change the nickname (check socket then use setNick_name()).
-            //if user/real name used just change it from the default (nickname).
-
-            //ex:if its PRIVMSG.
+        if (cmd == "PRIVMSG")
             priv_msg(buffer, client_socket);
-
-            // join(buffer, client_socket);
-            // nick(buffer, client_socket);
-            // user(buffer, client_socket);
+        else if (cmd == "PASS" || cmd == "USER") {
+            std::string message = "462 " + clients_map[client_socket].getClient_nick() + " :You may not reregister\n";
+            if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                std::cerr << "Error: send." << std::endl;
         }
-        //only enter NICK once then use block above if used again (to change).
-        else if (!clients_map[client_socket].getRegistered() && clients_map[client_socket].getAuth())
-            regi_user(buffer, client_socket);
+        else if (cmd == "NICK") {
+            //pars and check for duplicate.(return nick 1st param)
+            std::string message;
+
+            if (valid) {
+                message = ":" + clients_map[client_socket].getClient_nick() + " NICK " + newNick + "\n";
+                clients_map[client_socket].setClient_nick(newNick);
+            }
+            else if (already in use)
+                message = ":" + clients_map[client_socket].getClient_nick() + " " + newNick + ":Nickname is already in use\n";
+            else if (no nick specified)
+                message = "461 " + clients_map[client_socket].getClient_nick() + " NICK :Not enough parameters\n";
+            if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                std::cerr << "Error: send." << std::endl;
+        }
+        else if (cmd == "JOIN")
+            std::cout << "join function" << std::endl;
+        else {
+            std::string message = "421 " + clients_map[client_socket].getClient_nick() + " " + cmd + " :Unknown command\n";
+            if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                std::cerr << "Error: send." << std::endl;
+        }
     }
-    //only auth once.
-    else
-        auth_user(buffer, client_socket);
+    else {
+        std::string cmd = select_cmd(buffer);
+
+        if (cmd == "USER")
+            user_real(buffer, client_socket);
+        else if (cmd == "NICK")
+            regi_user(buffer, client_socket);
+        else if (cmd == "PASS") {
+            if (!clients_map[client_socket].getAuth())
+                auth_user(buffer, client_socket);
+        }
+        if (clients_map.find(client_socket) != clients_map.end() && clients_map[client_socket].getAuth()
+            && clients_map[client_socket].getRegNick() && clients_map[client_socket].getRegUser()) {
+            std::cout << "socket #" << client_socket << " authenticated successfully." << std::endl;
+            if (send(client_socket, "Welcome to IRC server...\n",  25, 0) == -1) {
+                std::cerr << "Error: send." << std::endl;
+                exit (1);
+            }
+            clients_map[client_socket].setRegistered(true);
+        }
+    }
+}
+
+void    server_c::user_real(const std::string &buffer, const uint16_t &client_socket) {
+    std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
+
+    if (!nickpair.first) {
+        if (clients_map.find(client_socket) == clients_map.end()) {
+            client_c cln;
+            cln.setClient_socket(client_socket);
+            clients_map[client_socket] = cln;
+        }
+        clients_map[client_socket].setClient_user(nickpair.second);
+        clients_map[client_socket].setClient_real_name(nickpair.second);
+        clients_map[client_socket     ].setRegUser(true);
+    }
+    else {
+        std::string err;
+
+        if (nickpair.first == 2)
+            err = "461 NICK :Not enough parameters\n";
+        if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+            std::cerr << "Error: send." << std::endl;
+        return ;
+    }
 }
 
 void    server_c::regi_user(const std::string &buffer, const uint16_t &client_socket) {
     std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
 
     if (!nickpair.first) {
+        for (int i = 0; i < clients_map.size(), i++;) {
+            if (nickpair.second == clients_map[i].getClient_nick()) {
+                std::string err = ":" + nickpair.second + ":Nickname is already in use\n";
+                if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
+                return ;
+            }
+        }
+        if (clients_map.find(client_socket) == clients_map.end()) {
+            client_c cln;
+            cln.setClient_socket(client_socket);
+            clients_map[client_socket] = cln;
+        }
         clients_map[client_socket].setClient_nick(nickpair.second);
-        clients_map[client_socket].setClient_user(nickpair.second);
-        clients_map[client_socket].setClient_real_name(nickpair.second);
-        clients_map[client_socket].setRegistered(true);
+        clients_map[client_socket].setRegNick(true);
     }
     else {
-        if (nickpair.first == 1)
-            std::cerr << nickpair.second << " :Unknown comand" << std::endl;
-        else if (nickpair.first == 2) // find appropriate Error Msg.
-            std::cerr << nickpair.second << " :Not enough parameters" << std::endl;
-        else if (nickpair.first == 3)
-            std::cerr << nickpair.second << " :Too many parameters" << std::endl;
+        std::string err;
+
+        if (nickpair.first == 2)
+            err = "461 NICK :Not enough parameters\n";
+        if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+            std::cerr << "Error: send." << std::endl;
         return ;
     }
 }
@@ -175,62 +237,29 @@ void    server_c::regi_user(const std::string &buffer, const uint16_t &client_so
 void    server_c::auth_user(const std::string &buffer, const uint16_t &client_socket) {
     std::pair<uint16_t, std::string> pairpass = regi_parse(buffer, 0);
 
+    std::string err;
+
+    std::cout << pairpass.first << "\n";
     if (!pairpass.first) {
         if (pairpass.second == getPassword()) {
-            client_c cln;
-            cln.setAuth(true);
-            cln.setClient_socket(client_socket);
-            clients_map[client_socket] = cln;
-            std::cout << "socket #" << client_socket << " authenticated successfully." << std::endl;
-            if (send(client_socket, "Welcome to IRC server...\n",  25, 0) == -1) {
-                std::cerr << "Error: send." << std::endl;
-                exit (1);
+            if (clients_map.find(client_socket) == clients_map.end()) {
+                client_c cln;
+                cln.setClient_socket(client_socket);
+                clients_map[client_socket] = cln;
             }
+            clients_map[client_socket].setAuth(true);
         }
+        else
+            err = "464 PASS :Password incorrect\n";
     }
-    else {
-    if (pairpass.first == 1)
-        std::cerr << pairpass.second << " :Unknown comand" << std::endl;
-    else if (pairpass.first == 2) // find appropriate Error Msg.
-        std::cerr << pairpass.second << " :Not enough parameters" << std::endl;
-    else if (pairpass.first == 3)
-        std::cerr << pairpass.second << " :Too many parameters" << std::endl;
-    }
+    if (pairpass.first == 2)
+        err = "461 PASS :Not enough parameters1\n";
+    if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+        std::cerr << "Error: send." << std::endl;
 }
 
-
-
-//privmsg to channel
-// void    server_c::msg_to_channel(const std::string &buffer, const uint16_t &client_socket) {
-//     std::map<std::string, std::vector<uint16_t> > ::iterator it;
-
-//     for (it = channels_map.begin(); it != channels_map.end(); ++it) {
-//     //check if channels exists.
-//         if (it->first == msgpair.first) {
-//             for (int i = 0; channels_map[msgpair.first].size(); i++)
-//                 send(channels_map[msgpair.first][0], msgpair.second.c_str(), msgpair.second.size(), 0);
-//             return ;
-//         }
-//     }
-// }
-
-//privmsgto user
-// void    server_c::msg_to_user(const std::string &buffer, const uint16_t &client_socket) {
-//     std::map<uint16_t, client_c>::iterator it;
-
-//     for (it = clients_map.begin(); it != clients_map.end(); ++it) {
-//         if (clients_map[it->first].getClient_nick() == msgpair.first) {
-//             send(clients_map[it->first].getClient_socket(), msgpair.second.c_str(), msgpair.second.size(), 0);
-//             return ;
-//         }
-//     }
-//     //return some error message (no user found).
-//     return ;
-// }
-
-
 void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_socket) {
-    std::pair<std::vector<std::string>, std::string> msgpair = prvmsg_parse(buffer, 3);
+    std::pair<std::vector<std::string>, std::string> msgpair = prvmsg_parse(buffer);
 
     if (!msgpair.first.empty()) {
         std::vector<uint16_t> pool;
@@ -242,30 +271,37 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
                     --i;
                 }
                 else {
-                    std::string message = "403 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :No such channel";
-                    send(client_socket, message.c_str(), message.size(), 0);
+                    std::string message = "403 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :No such channel\n";
+                    if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                        std::cerr << "Error: send." << std::endl;
                 }
             }
             else {
+                bool a = false;
                 for (size_t j = 0; j < clients_map.size(); j++) {
                     if (clients_map[j].getClient_nick() == msgpair.first[i]) {
-                        pool.push_back(i);
+                        pool.push_back(j);
+                        a = true;
                         break ;
                     }
                 }
-                std::string message = "401 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :No such nick";
-                if (send(client_socket, message.c_str(), message.size(), 0) == -1)
-                    std::cerr << "Error: send." << std::endl;
+                if (!a) {
+                    std::string message = "401 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :No such nick\n";
+                    if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                        std::cerr << "Error: send." << std::endl;
+                }
             }
         }
         std::set<uint16_t> betterPool(pool.begin(), pool.end());
 
         for (std::set<uint16_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
-            if (send(*it, msgpair.second.c_str(), msgpair.second.size(), 0) == -1)
+            std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + clients_map[*it].getClient_nick() +" :" + msgpair.second + "\n";
+            if (send(*it, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
     }
 }
+
 
 #ifdef NOTES
 

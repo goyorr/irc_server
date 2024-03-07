@@ -40,28 +40,13 @@ class server_c {
                 void                regi_user(const std::string &buffer, const uint16_t &client_socket);
 
                 void                priv_msg(const std::string &buffer, const uint16_t &client_socket);
-
-
+                void                user_real(const std::string &buffer, const uint16_t &client_socket);
 };
 
-std::pair<int, std::string> regi_parse(std::string str, int flag);
+std::pair<int, std::string>                         regi_parse(std::string str, int flag);
+std::pair<std::vector<std::string>, std::string >   prvmsg_parse(std::string buffer);
 
+int                                                 is_ws(int c);
+int                                                 is_end(std::string str, int *i);
+std::string                                         select_cmd(std::string buffer);
 #endif
-
-// NICKNAME & USER
-//only counts as registered if atlest nock is set.
-// else if (clients_map[client_socket].getClient_nick() != "_Default_") {
-//     std::pair <int , std::string> userpair = regi_parse(buffer, 2);
-//     if (!userpair.first) {
-//         clients_map[client_socket].setClient_user(userpair.second);
-//         clients_map[client_socket].setRegistered(true);
-//     }
-//     else {
-//         if (userpair.first == 1)
-//             std::cerr << userpair.second << " :Unknown comand" << std::endl;
-//         else if (userpair.first == 2) // find appropriate Error Msg.
-//             std::cerr << userpair.second << " :Not enough parameters" << std::endl;
-//         else if (userpair.first == 3)
-//             std::cerr << userpair.second << " :Too many parameters" << std::endl;
-//         return ;
-//     }

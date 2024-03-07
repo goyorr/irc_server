@@ -37,6 +37,14 @@ bool    client_c::getAuth() const {
         return _authed;
 }
 
+bool    client_c::getRegUser() const {
+        return _userReg;
+}
+
+bool    client_c::getRegNick() const {
+        return _nickReg;
+}
+
 void    client_c::setClient_nick(std::string tmp) {
         _client_nick = tmp;
 }
@@ -59,4 +67,12 @@ void    client_c::setRegistered(bool con) {
 
 void    client_c::setAuth(bool tmp) {
         _authed = tmp;
+}
+
+void    client_c::setRegUser(bool tmp) {
+        _userReg = tmp;
+}
+
+void    client_c::setRegNick(bool tmp) {
+        _nickReg = tmp;
 }

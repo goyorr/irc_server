@@ -18,6 +18,8 @@ class client_c {
             int                         _client_socket;
             bool                        _registered;
             bool                        _authed;
+            bool                        _nickReg;
+            bool                        _userReg;
     public:
             client_c();
             ~client_c();
@@ -30,6 +32,8 @@ class client_c {
             int                         getClient_socket() const;
             bool                        getRegistered() const;
             bool                        getAuth() const;
+            bool                        getRegNick() const;
+            bool                        getRegUser() const;
 
             void                        setClient_nick(std::string tmp);
             void                        setClient_user(std::string tmp);
@@ -37,6 +41,10 @@ class client_c {
             void                        setClient_socket(int tmp);
             void                        setRegistered(bool con);
             void                        setAuth(bool tmp);
+            void                        setRegUser(bool tmp);
+            void                        setRegNick(bool tmp);
+
+
 };
 
 #endif
