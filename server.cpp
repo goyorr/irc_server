@@ -103,15 +103,12 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                         if (bytes == -1)
                             return std::cerr << "Error: recv." << std::endl, (void)NULL;
                         buffer[bytes] = '\0';
-                        if (bytes >= 1) {
+                        if (bytes >= 1)
                             server_c::pars_cmd(buffer, client_c::_disc[i].fd);
-                        }
                         else if (bytes == 0) {
                             if (close(client_c::_disc[i].fd) == -1)
-                                return std::cerr << "Error: close." << std::endl, (void)NULL;
-                            std::cout << "Socket #" << client_c::_disc[i].fd << " closed!" << std::endl;
-                            if (clients_map.find(client_c::_disc[i].fd) != clients_map.end())
-                                clients_map.erase(client_c::_disc[i].fd);
+                                std::cout << "Socket #" << client_c::_disc[i].fd << " closed!" << std::endl;
+                            clients_map.erase(client_c::_disc[i].fd);
                             client_c::_disc.erase(client_c::_disc.begin() + i);
                         }
                         std::cout << std::flush;
@@ -143,7 +140,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
             if (!nickpair.first) {
                 for (std::map<uint16_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
                     if (nickpair.second == clients_map[it->first].getClient_nick()) {
-                    std::string err = ":" + nickpair.second + ":Nickname is already in use\n";
+                        std::string err = ":" + nickpair.second + ":Nickname is already in use\n";
                     if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                         std::cerr << "Error: send." << std::endl;
                     return ;
@@ -151,6 +148,8 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
                 }
                 message = ":" + clients_map[client_socket].getClient_nick() + " NICK " + nickpair.second + "\n";
                 clients_map[client_socket].setClient_nick(nickpair.second);
+                if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
             }
             else if (nickpair.first == 2) {
                 message = "461 " + clients_map[client_socket].getClient_nick() + " NICK :Not enough parameters\n";
@@ -164,6 +163,13 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
             std::string message = ":" + clients_map[client_socket].getClient_nick() + " QUIT :lol\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
+            std::cout << client_socket << " Disconnected" << std::endl;
+            clients_map.erase(client_socket);
+            for (size_t i = 0; i < client_c::_disc.size(); i++) {
+                if (client_c::_disc[i].fd == client_socket)
+                    client_c::_disc.erase(client_c::_disc.begin() + i);
+            }
+            close(client_socket);
         }
         else {
             std::string message = "421 " + clients_map[client_socket].getClient_nick() + " " + cmd + " :Unknown command\n";
@@ -218,7 +224,7 @@ void    server_c::reg_user(const std::string &buffer, const uint16_t &client_soc
         else if (userpair.first == 3)
             err = "no ASTERIX error, to check\n";
         else if (userpair.first == 2)
-            err = "461 NICK :Not enough parameters\n";
+            err = "461 USER :Not enough parameters\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }
@@ -266,14 +272,13 @@ void    server_c::reg_pass(const std::string &buffer, const uint16_t &client_soc
                 cln.setClient_socket(client_socket);
                 clients_map[client_socket] = cln;
             }
-            std::cout << "pass\n\n";
             clients_map[client_socket].setAuth(true);
         }
         else
             err = "464 PASS :Password incorrect\n";
     }
     if (pairpass.first == 2)
-        err = "461 PASS :Not enough parameters1\n";
+        err = "461 PASS :Not enough parameters\n";
     if (send(client_socket, err.c_str(), err.size(), 0) == -1)
         std::cerr << "Error: send." << std::endl;
 }
