@@ -1,6 +1,6 @@
 NAME = ircserv
 
-SRC = main.cpp server.cpp client.cpp parse.cpp
+SRC = main.cpp server.cpp client.cpp parse.cpp signal.cpp
 
 HEADER = headers/server.hpp headers/client.hpp headers/includes.h 
 

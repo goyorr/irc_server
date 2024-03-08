@@ -37,6 +37,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     int32_t     tmp_socket;
     ssize_t     bytes;
 
+    signal(SIGINT, signalHandler);
     setPort(tmp_port);
     setPassword(tmp_password);
 
@@ -54,6 +55,9 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     tmp_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (tmp_socket == -1)
         return std::cerr << "Error: socket." << std::endl, (void)NULL;
+
+    int i1 = 1;
+    setsockopt(tmp_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&i1, sizeof(i1));
 
     setServer_socket(tmp_socket);
 
@@ -137,8 +141,8 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
             std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
 
             if (!nickpair.first) {
-                for (size_t i = 0; i < clients_map.size(); i++) {
-                    if (nickpair.second == clients_map[i].getClient_nick()) {
+                for (std::map<uint16_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
+                    if (nickpair.second == clients_map[it->first].getClient_nick()) {
                     std::string err = ":" + nickpair.second + ":Nickname is already in use\n";
                     if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                         std::cerr << "Error: send." << std::endl;
@@ -224,9 +228,8 @@ void    server_c::reg_nick(const std::string &buffer, const uint16_t &client_soc
     std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
 
     if (!nickpair.first) {
-        std::cout << "NICK: " << nickpair.second << std::endl;
-        for (size_t i = 0; i < clients_map.size(); i++) {
-            if (nickpair.second == clients_map[i].getClient_nick()) {
+        for (std::map<uint16_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
+            if (nickpair.second == clients_map[it->first].getClient_nick()) {
                 std::string err = ":" + nickpair.second + ":Nickname is already in use\n";
                 if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
@@ -295,9 +298,9 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
             }
             else {
                 bool a = false;
-                for (size_t j = 0; j < clients_map.size(); j++) {
-                    if (clients_map[j].getClient_nick() == msgpair.first[i]) {
-                        pool.push_back(j);
+                for (std::map<uint16_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
+                    if (clients_map[it->first].getClient_nick() == msgpair.first[i]) {
+                        pool.push_back(it->first);
                         a = true;
                         break ;
                     }

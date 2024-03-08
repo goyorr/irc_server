@@ -6,6 +6,7 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <signal.h>
 #include <algorithm>
 #include <arpa/inet.h>
 #include <sys/socket.h>

@@ -32,6 +32,8 @@ class server_c {
                 void                reg_nick(const std::string &buffer, const uint16_t &client_socket);
 
                 void                priv_msg(const std::string &buffer, const uint16_t &client_socket);
+
+                static void         signalHandler(int signal);
 };
 
 #endif
