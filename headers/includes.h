@@ -7,9 +7,9 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #include "client.hpp"
 #include "server.hpp"
 

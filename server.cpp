@@ -100,7 +100,6 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                             return std::cerr << "Error: recv." << std::endl, (void)NULL;
                         buffer[bytes] = '\0';
                         if (bytes >= 1) {
-                            std::cout << "data from socket #" << client_c::_disc[i].fd << ": " << buffer;
                             server_c::pars_cmd(buffer, client_c::_disc[i].fd);
                         }
                         else if (bytes == 0) {
@@ -157,6 +156,11 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
         }
         else if (cmd == "JOIN")
             std::cout << "join function" << std::endl;
+        else if (cmd == "QUIT") {
+            std::string message = ":" + clients_map[client_socket].getClient_nick() + " QUIT :lol\n";
+            if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                std::cerr << "Error: send." << std::endl;
+        }
         else {
             std::string message = "421 " + clients_map[client_socket].getClient_nick() + " " + cmd + " :Unknown command\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
@@ -174,10 +178,11 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
             if (!clients_map[client_socket].getAuth())
                 reg_pass(buffer, client_socket);
         }
-        if (clients_map.find(client_socket) != clients_map.end() && clients_map[client_socket].getAuth()
+        if (clients_map[client_socket].getAuth()
             && clients_map[client_socket].getRegNick() && clients_map[client_socket].getRegUser()) {
             std::cout << "socket #" << client_socket << " authenticated successfully." << std::endl;
-            if (send(client_socket, "Welcome to IRC server...\n",  25, 0) == -1) {
+            std::string message = "001 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network\n";
+            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
                 std::cerr << "Error: send." << std::endl;
                 exit (1);
             }
@@ -187,26 +192,31 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
 }
 
 void    server_c::reg_user(const std::string &buffer, const uint16_t &client_socket) {
-    std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
+    std::pair<uint16_t, std::string> userpair = regi_parse(buffer, 2);
 
-    if (!nickpair.first) {
+
+    if (!userpair.first) {
         if (clients_map.find(client_socket) == clients_map.end()) {
             client_c cln;
             cln.setClient_socket(client_socket);
             clients_map[client_socket] = cln;
         }
-        clients_map[client_socket].setClient_user(nickpair.second);
-        clients_map[client_socket].setClient_real_name(nickpair.second);
+        size_t pos = userpair.second.find(32);
+        clients_map[client_socket].setClient_user(userpair.second.substr(0, pos));
+        clients_map[client_socket].setClient_real_name(userpair.second.substr(pos + 1, userpair.second.size() - pos + 1));
         clients_map[client_socket].setRegUser(true);
     }
     else {
         std::string err;
-
-        if (nickpair.first == 2)
+        
+        if (userpair.first == 1)
+            err = "no ZERO error, to check\n";
+        else if (userpair.first == 3)
+            err = "no ASTERIX error, to check\n";
+        else if (userpair.first == 2)
             err = "461 NICK :Not enough parameters\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
-        return ;
     }
 }
 
@@ -214,6 +224,7 @@ void    server_c::reg_nick(const std::string &buffer, const uint16_t &client_soc
     std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
 
     if (!nickpair.first) {
+        std::cout << "NICK: " << nickpair.second << std::endl;
         for (size_t i = 0; i < clients_map.size(); i++) {
             if (nickpair.second == clients_map[i].getClient_nick()) {
                 std::string err = ":" + nickpair.second + ":Nickname is already in use\n";
@@ -237,7 +248,6 @@ void    server_c::reg_nick(const std::string &buffer, const uint16_t &client_soc
             err = "461 NICK :Not enough parameters\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
-        return ;
     }
 }
 
@@ -246,7 +256,6 @@ void    server_c::reg_pass(const std::string &buffer, const uint16_t &client_soc
 
     std::string err;
 
-    std::cout << pairpass.first << "\n";
     if (!pairpass.first) {
         if (pairpass.second == getPassword()) {
             if (clients_map.find(client_socket) == clients_map.end()) {
@@ -254,6 +263,7 @@ void    server_c::reg_pass(const std::string &buffer, const uint16_t &client_soc
                 cln.setClient_socket(client_socket);
                 clients_map[client_socket] = cln;
             }
+            std::cout << "pass\n\n";
             clients_map[client_socket].setAuth(true);
         }
         else

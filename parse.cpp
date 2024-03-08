@@ -15,19 +15,69 @@ int is_end(std::string str, int *i)
     
 }
 
+
+std::pair<int, std::string> user_parse(std::string usr)     // mlk 0 * realname
+{
+    std::pair <int , std::string> res;
+    int i = 0;
+    int pos = i;
+    while(!is_ws(usr[i]))  // user;
+        i++;
+    std::string username = usr.substr(pos, i - pos);
+    while (is_ws(usr[i]))
+        i++;
+    if (is_end(usr, &i)) {
+        res.first = 2; return res;
+    }
+    if (usr[i] != '0') {
+        res.first = 1; return res;
+    }
+    i++;
+    if (is_end(usr, &i)) {
+        res.first = 2; return res;
+    }
+    while(is_ws(usr[i]))   
+        i++;
+    if (is_end(usr, &i)) {
+        res.first = 2; return res;
+    }
+    if (usr[i] != '*') {
+        res.first = 3; return res;
+    }
+    i++;
+    if (is_end(usr, &i)) {
+        res.first = 2; return res;
+    }
+    while (is_ws(usr[i]))    
+        i++;
+    if (is_end(usr, &i)) {
+        res.first = 2; return res;
+    }
+    pos = i;
+    while (!is_ws(usr[i]))      // realname;
+        i++;
+    std::string realname = usr.substr(pos, i - pos);
+    res.second = username + " " + realname;
+    res.first = 0;
+    return res;
+}
+
+
 std::pair<int, std::string> regi_parse(std::string str, int flag)
 {
     std::string cmd;
+    std::pair<int, std::string> res;
     if (!flag)
         cmd = "PASS";
     else if (flag == 1)
         cmd = "NICK";
     else if (flag == 2)
+    {
         cmd = "USER";
+    }
     else if (flag == 3)
         cmd = "PRIVMSG";
     
-    std::pair<int, std::string> res;
     int i = 0;
     while(is_ws(str[i]))
         i++;
@@ -60,15 +110,28 @@ std::pair<int, std::string> regi_parse(std::string str, int flag)
     tmp = i;
     while(!is_ws(str[i]) && !is_end(str, &i))
         i++;
-    std::string post = str.substr(tmp, i - tmp);
-    while (is_ws(str[i]))
-        i++;
-    if (is_end(str, &i))
+    if (flag == 2)
     {
-        res.first = 0; res.second = post;
-        return (res);
+        std::string post = str.substr(tmp, str.size() - tmp);
+        std::pair<int, std::string> user_check = user_parse(post);
+        if (!user_check.first)
+        {
+            res.first = 0;
+            res.second = user_check.second;
+            return (res);
+        }
+        else if (user_check.first == 1) {
+            res.first = 1; return res;
+        }
+        else if (user_check.first == 3) {
+            res.first = 3; return res;
+        }
+        else if (user_check.first == 2) {
+            res.first = 2; return res;
+        }
     }
-    res.first = 3; res.second = pre;
+    std::string post = str.substr(tmp, i - tmp);
+    res.second = post;
     return (res);
 }
 
