@@ -106,8 +106,8 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                         if (bytes >= 1)
                             server_c::pars_cmd(buffer, client_c::_disc[i].fd);
                         else if (bytes == 0) {
-                            if (close(client_c::_disc[i].fd) == -1)
-                                std::cout << "Socket #" << client_c::_disc[i].fd << " closed!" << std::endl;
+                            close(client_c::_disc[i].fd);
+                            std::cout << "Socket #" << client_c::_disc[i].fd << " closed!" << std::endl;
                             clients_map.erase(client_c::_disc[i].fd);
                             client_c::_disc.erase(client_c::_disc.begin() + i);
                         }
@@ -188,8 +188,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
             if (!clients_map[client_socket].getAuth())
                 reg_pass(buffer, client_socket);
         }
-        if (clients_map[client_socket].getAuth()
-            && clients_map[client_socket].getRegNick() && clients_map[client_socket].getRegUser()) {
+        if (clients_map[client_socket].getAuth() && clients_map[client_socket].getRegNick() && clients_map[client_socket].getRegUser()) {
             std::cout << "socket #" << client_socket << " authenticated successfully." << std::endl;
             std::string message = "001 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network\n";
             if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
