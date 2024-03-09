@@ -10,8 +10,8 @@ class server_c {
                 server_c();
                 ~server_c();
 
-                std::map<uint16_t, client_c>                        clients_map;
-                std::map<std::string, std::vector<uint16_t> >    channels_map;
+                std::map<uint16_t, client_c>        clients_map;
+                std::map<std::string, channels_c>   channels_map;
 
                 void                setPort(const std::string &tmp);
                 void                setPassword(const std::string &tmp);
@@ -32,6 +32,7 @@ class server_c {
                 void                reg_nick(const std::string &buffer, const uint16_t &client_socket);
 
                 void                priv_msg(const std::string &buffer, const uint16_t &client_socket);
+                void                join(const std::string &buffer, const uint16_t &client_socket);
 
                 static void         signalHandler(int signal);
 };

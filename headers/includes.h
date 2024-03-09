@@ -11,6 +11,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "channels.hpp"
 #include "client.hpp"
 #include "server.hpp"
 
