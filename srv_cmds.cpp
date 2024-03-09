@@ -85,13 +85,13 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
 
     if (!msgpair.first.empty()) {
         std::vector<uint16_t> pool;
+
         for (size_t i = 0; i < msgpair.first.size(); i++) {
-            //change PRIVMSG for channels after making JOIN!
+            //change PRIVMSG for channels after making JOIN! (maybe not?)
             if (msgpair.first[i][0] == '#') {
                 //if channel exists.
-                //check if user is in channel.
                 if (channels_map.find(msgpair.first[i]) != channels_map.end()) {
-                    // pool.insert(pool.end(), channels_map[msgpair.first[i]].begin(), channels_map[msgpair.first[i]].end());
+                    pool.insert(pool.end(), channels_map[msgpair.first[i]]._members.begin(), channels_map[msgpair.first[i]]._members.end());
                     msgpair.first.erase(msgpair.first.begin() + i);
                     --i;
                 }
@@ -129,13 +129,9 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
 
 void    server_c::join(const std::string &buffer, const uint16_t &client_socket) {
     (void)buffer;
-
-    //                                                          = pars_join();
-    std::vector<std::pair<std::string, std::string> > join_pair;
-    std::string message;
-
-    // channel name      its password
-    // vector[i].first   vector[i].second
+    //                        name        password
+    std::vector<std::pair<std::string, std::string> >   join_pair;// = pars_join(buffer);
+    std::string                                         message;
 
     for (size_t i = 0; i < join_pair.size(); i++) {
         if (channels_map.find(join_pair[i].first) == channels_map.end()) {
@@ -143,7 +139,7 @@ void    server_c::join(const std::string &buffer, const uint16_t &client_socket)
 
             channels_map[join_pair[i].first] = newChnl;
             channels_map[join_pair[i].first].setName(join_pair[i].first);
-            channels_map[join_pair[i].first]._members.push_back(clients_map[client_socket].getClient_nick());
+            channels_map[join_pair[i].first]._members.push_back(client_socket);
             channels_map[join_pair[i].first]._operators.push_back(client_socket);
             message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + join_pair[i].first + "\n";
         }
@@ -153,7 +149,7 @@ void    server_c::join(const std::string &buffer, const uint16_t &client_socket)
                     message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel\n";
             }
             else
-                channels_map[join_pair[i].first]._members.push_back(clients_map[client_socket].getClient_nick());
+                channels_map[join_pair[i].first]._members.push_back(client_socket);
         }
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;

@@ -3,23 +3,23 @@
 
 class server_c {
     private:
-                uint16_t    _port;
                 std::string _password;
+                uint16_t    _port;
                 uint16_t    _server_socket;
     public:
                 server_c();
                 ~server_c();
 
-                std::map<uint16_t, client_c>        clients_map;
+                std::map<uint16_t,    client_c>     clients_map;
                 std::map<std::string, channels_c>   channels_map;
 
                 void                setPort(const std::string &tmp);
                 void                setPassword(const std::string &tmp);
                 void                setServer_socket(const uint16_t &tmp);
 
+                const std::string   getPassword() const;
                 uint16_t            getPort() const;
                 uint16_t            getServer_socket() const;
-                const std::string   getPassword() const;
 
                 void                pars_port(const std::string &port);
 

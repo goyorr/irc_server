@@ -13,7 +13,7 @@ class channels_c {
                 ~channels_c();
 
                 std::vector<uint16_t>       _operators;
-                std::vector<std::string>    _members;
+                std::vector<uint16_t>    _members;
 
                 std::string getName();
                 std::string getChannelPassword();
