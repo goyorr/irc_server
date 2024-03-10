@@ -1,8 +1,8 @@
 NAME = ircserv
 
-SRC = main.cpp server.cpp client.cpp
+SRC = main.cpp server.cpp client.cpp parse.cpp signal.cpp srv_cmds.cpp register.cpp channels.cpp jk_parse.cpp
 
-HEADER = server.hpp client.hpp
+HEADER = headers/server.hpp headers/client.hpp headers/includes.h headers/channels.hpp
 
 OBJ = ${SRC:.cpp=.o}
 
@@ -24,6 +24,6 @@ clean:
 		${RM} ${OBJ}
 
 fclean: clean
-		${RM} ${NAME}
+		sleep 1 && ${RM} ${NAME}
 
 re: fclean all
