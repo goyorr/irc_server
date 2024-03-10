@@ -130,13 +130,12 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
 void    server_c::join(const std::string &buffer, const uint16_t &client_socket) {
     (void)buffer;
     //                        name        password
-    std::vector<std::pair<std::string, std::string> >   join_pair;// = pars_join(buffer);
+    std::vector<std::pair<std::string, std::string> >   join_pair = joiner(buffer);
     std::string                                         message;
 
     for (size_t i = 0; i < join_pair.size(); i++) {
         if (channels_map.find(join_pair[i].first) == channels_map.end()) {
             channels_c newChnl;
-
             channels_map[join_pair[i].first] = newChnl;
             channels_map[join_pair[i].first].setName(join_pair[i].first);
             channels_map[join_pair[i].first]._members.push_back(client_socket);
