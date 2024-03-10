@@ -104,7 +104,8 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                             return std::cerr << "Error: recv." << std::endl, (void)NULL;
                         buffer[bytes] = '\0';
                         if (bytes >= 1) {
-                            std::cout << buffer;   
+                            std::cout << buffer << ".\n";
+                            //first time pars for "NICK lime\r\nUSER lime 0 * lime\r\n"
                             server_c::pars_cmd(buffer, client_c::_disc[i].fd);
                         }
                         else if (bytes == 0) {

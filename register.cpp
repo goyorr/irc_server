@@ -17,7 +17,7 @@ void    server_c::reg_user(const std::string &buffer, const uint16_t &client_soc
     }
     else {
         std::string err;
-        
+
         if (userpair.first == 1)
             err = "no ZERO error, to check\n";
         else if (userpair.first == 3)
