@@ -128,14 +128,19 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
 }
 
 void    server_c::join(const std::string &buffer, const uint16_t &client_socket) {
-    (void)buffer;
     //                        name        password
+        std::cout << "------??????????..." << std::endl;
     std::vector<std::pair<std::string, std::string> >   join_pair = joiner(buffer);
+        std::cout << "------232323..." << join_pair.size()  << std::endl;
     std::string                                         message;
 
+        std::cout << "------first ..." << join_pair[0].first << std::endl;
+        std::cout << "------seconf ..." << join_pair[0].second << std::endl;
     for (size_t i = 0; i < join_pair.size(); i++) {
         if (channels_map.find(join_pair[i].first) == channels_map.end()) {
             channels_c newChnl;
+
+            std::cout << "------created ..." << join_pair[i].first << std::endl;
             channels_map[join_pair[i].first] = newChnl;
             channels_map[join_pair[i].first].setName(join_pair[i].first);
             channels_map[join_pair[i].first]._members.push_back(client_socket);
@@ -143,6 +148,7 @@ void    server_c::join(const std::string &buffer, const uint16_t &client_socket)
             message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + join_pair[i].first + "\n";
         }
         else {
+            std::cout << "---------joined ..." << join_pair[i].first << std::endl;
             if (channels_map[join_pair[i].first].getProtected()) {
                 if (join_pair[i].second != channels_map[join_pair[i].first].getChannelPassword())
                     message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel\n";
