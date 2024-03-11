@@ -14,7 +14,7 @@ class channels_c {
 
                 std::vector<uint16_t>       _operators;
                 std::vector<uint16_t>    _members;
-                // std::vector<std::pair<bool, uint16_t> > memberss;
+                std::vector<std::pair<bool, uint16_t> > memberss;
 
                 std::string getName();
                 std::string getChannelPassword();

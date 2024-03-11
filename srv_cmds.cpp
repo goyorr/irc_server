@@ -39,7 +39,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
             join(buffer, client_socket);
         }
         else if (cmd == "KICK") {
-            join_kick(buffer, 1);
+            kick(buffer, client_socket);
         }
         else if (cmd == "QUIT") {
             std::string message = ":" + clients_map[client_socket].getClient_nick() + " QUIT :lol\n";
@@ -161,4 +161,35 @@ void    server_c::join(const std::string &buffer, const uint16_t &client_socket)
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }
+}
+
+
+void    kick(const std::string &buffer, const uint16_t &client_socket){
+
+    server_c server;
+
+    std::vector<std::pair<std::string, std::string> >   kick_pairs = join_kick(buffer, 1);
+        std::string                                         message;
+        
+        for (size_t i = 0; i < kick_pairs.size(); i++)
+        {
+
+
+                for (std::map<std::uint16_t, client_c>::iterator itt = server.clients_map.begin(); itt != server.clients_map.end(); itt ++)
+                {
+                    if (itt->second.getClient_nick() == kick_pairs[i].second)
+                    {
+                        if ()
+                    }
+
+                }
+            for (std::map<std::string, channels_c>::iterator it = server.channels_map.begin(); it != server.channels_map.end(); it ++)
+            {
+                if (it->first == kick_pairs[i].first)
+                {
+                
+                }
+            }
+            
+        }
 }
