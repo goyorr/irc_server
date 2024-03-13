@@ -38,20 +38,21 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
         else if (cmd == "JOIN") {
             join(buffer, client_socket);
         }
-        else if (cmd == "KICK") {
-            kick(buffer, client_socket);
-        }
+        // else if (cmd == "KICK") {
+        //     kick(buffer, client_socket);
+        // }
         else if (cmd == "QUIT") {
             std::string message = ":" + clients_map[client_socket].getClient_nick() + " QUIT :lol\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
-            std::cout << client_socket << " Disconnected" << std::endl;
+            std::cout << "#" << client_socket << " disconnected" << std::endl;
             clients_map.erase(client_socket);
             for (size_t i = 0; i < client_c::_disc.size(); i++) {
                 if (client_c::_disc[i].fd == client_socket)
                     client_c::_disc.erase(client_c::_disc.begin() + i);
             }
-            close(client_socket);
+            if (close(client_socket) == -1)
+                std::cerr << "Error: close.";
         }
         else {
             std::string message = "421 " + clients_map[client_socket].getClient_nick() + " " + cmd + " :Unknown command\n";
@@ -86,43 +87,52 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
     std::pair<std::vector<std::string>, std::string> msgpair = prvmsg_parse(buffer);
 
     if (!msgpair.first.empty()) {
-        std::vector<uint16_t> pool;
-
         for (size_t i = 0; i < msgpair.first.size(); i++) {
-            //change PRIVMSG for channels after making JOIN! (maybe not?)
+            std::vector<uint16_t> pool;
             if (msgpair.first[i][0] == '#') {
-                //if channel exists.
                 if (channels_map.find(msgpair.first[i]) != channels_map.end()) {
                     pool.insert(pool.end(), channels_map[msgpair.first[i]]._members.begin(), channels_map[msgpair.first[i]]._members.end());
-                    msgpair.first.erase(msgpair.first.begin() + i);
-                    --i;
-                }
-                else {
-                    std::string message = "403 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :No such channel\n";
-                    if (send(client_socket, message.c_str(), message.size(), 0) == -1)
-                        std::cerr << "Error: send." << std::endl;
-                }
-            }
-            else {
-                bool a = false;
-                for (std::map<uint16_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
-                    if (clients_map[it->first].getClient_nick() == msgpair.first[i]) {
-                        pool.push_back(it->first);
-                        a = true;
-                        break ;
+
+                    std::set<uint16_t> betterPool(pool.begin(), pool.end());
+                    for (std::set<uint16_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
+                        if (*it == client_socket)
+                            continue;
+                        std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + msgpair.first[i] + " :" + msgpair.second + "\r\n";
+                        if (send(*it, message.c_str(), message.size(), 0) == -1)
+                            std::cerr << "Error: send." << std::endl;
                     }
                 }
-                if (!a) {
-                    std::string message = "401 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :No such nick\n";
+                else {
+                    std::string message = "403 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :No such channel\r\n";
                     if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                         std::cerr << "Error: send." << std::endl;
                 }
+                msgpair.first.erase(msgpair.first.begin() + i);
+                --i;
+            }
+        }
+
+        std::vector<uint16_t> pool;
+        for (size_t i = 0; i < msgpair.first.size(); i++) {
+            bool a = false;
+            for (std::map<uint16_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
+                if (clients_map[it->first].getClient_nick() == msgpair.first[i]) {
+                    pool.push_back(it->first);
+                    a = true;
+                    break ;
+                }
+            }
+            if (!a) {
+                std::string message = "401 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :No such nick\r\n";
+                if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
             }
         }
         std::set<uint16_t> betterPool(pool.begin(), pool.end());
-
         for (std::set<uint16_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
-            std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + clients_map[*it].getClient_nick() +" :" + msgpair.second + "\n";
+            if (*it == client_socket)
+                continue;
+            std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + clients_map[*it].getClient_nick() +" :" + msgpair.second + "\r\n";
             if (send(*it, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
@@ -130,19 +140,15 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
 }
 
 void    server_c::join(const std::string &buffer, const uint16_t &client_socket) {
-    //                        name        password
-        std::cout << "------??????????..." << std::endl;
     std::vector<std::pair<std::string, std::string> >   join_pair = join_kick(buffer, 0);
-        std::cout << "------232323..." << join_pair.size()  << std::endl;
     std::string                                         message;
 
-        std::cout << "------first ..." << join_pair[0].first << std::endl;
-        std::cout << "------seconf ..." << join_pair[0].second << std::endl;
     for (size_t i = 0; i < join_pair.size(); i++) {
+        if (join_pair[i].first[join_pair[i].first.size() - 1] == 13)
+            join_pair[i].first = join_pair[i].first.substr(0, join_pair[i].first.size() - 1);
         if (channels_map.find(join_pair[i].first) == channels_map.end()) {
             channels_c newChnl;
 
-            std::cout << "------created ..." << join_pair[i].first << std::endl;
             channels_map[join_pair[i].first] = newChnl;
             channels_map[join_pair[i].first].setName(join_pair[i].first);
             channels_map[join_pair[i].first]._members.push_back(client_socket);
@@ -150,46 +156,21 @@ void    server_c::join(const std::string &buffer, const uint16_t &client_socket)
             message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + join_pair[i].first + "\n";
         }
         else {
-            std::cout << "---------joined ..." << join_pair[i].first << std::endl;
             if (channels_map[join_pair[i].first].getProtected()) {
                 if (join_pair[i].second != channels_map[join_pair[i].first].getChannelPassword())
                     message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel\n";
             }
-            else
+            else {
                 channels_map[join_pair[i].first]._members.push_back(client_socket);
-        }
-        if (send(client_socket, message.c_str(), message.size(), 0) == -1)
-            std::cerr << "Error: send." << std::endl;
-    }
-}
-
-
-void    kick(const std::string &buffer, const uint16_t &client_socket){
-
-    server_c server;
-
-    std::vector<std::pair<std::string, std::string> >   kick_pairs = join_kick(buffer, 1);
-        std::string                                         message;
-        
-        for (size_t i = 0; i < kick_pairs.size(); i++)
-        {
-
-
-                for (std::map<std::uint16_t, client_c>::iterator itt = server.clients_map.begin(); itt != server.clients_map.end(); itt ++)
-                {
-                    if (itt->second.getClient_nick() == kick_pairs[i].second)
-                    {
-                        if ()
-                    }
-
+                message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + join_pair[i].first + "\n";
+                for (size_t j = 0; j < channels_map[join_pair[i].first]._members.size(); j++) {
+                    if (send(channels_map[join_pair[i].first]._members[j], message.c_str(), message.size(), 0) == -1)
+                            std::cerr << "Error: send." << std::endl;
                 }
-            for (std::map<std::string, channels_c>::iterator it = server.channels_map.begin(); it != server.channels_map.end(); it ++)
-            {
-                if (it->first == kick_pairs[i].first)
-                {
-                
-                }
+                return ;
             }
-            
         }
+    }
+    if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+        std::cerr << "Error: send." << std::endl;
 }
