@@ -34,6 +34,8 @@ class server_c {
                 void                priv_msg(const std::string &buffer, const uint16_t &client_socket);
                 void                join(const std::string &buffer, const uint16_t &client_socket);
 
+                void kicker();
+
                 static void         signalHandler(int signal);
 };
 

@@ -20,6 +20,6 @@ std::pair<std::vector<std::string>, std::string >   prvmsg_parse(std::string buf
 int                                                 is_ws(int c);
 int                                                 is_end(std::string str, int *i);
 std::string                                         select_cmd(std::string buffer);
-std::vector<std::pair<std::string, std::string> >   joiner(std::string buffer);
+std::vector<std::pair<std::string, std::string> >   join_kick(std::string buffer, int jk);
 
 #endif
