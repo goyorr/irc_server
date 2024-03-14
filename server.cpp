@@ -31,7 +31,7 @@ uint16_t server_c::getServer_socket() const {
 }
 
 void    server_c::init_server(const std::string &tmp_port, const std::string &tmp_password) {
-    struct      sockaddr_in sockAddr;
+    struct      sockaddr_in socket_addr;
     int32_t     tmp_client_socket;
     int32_t     non_block;
     int32_t     tmp_socket;
@@ -61,11 +61,11 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
 
     setServer_socket(tmp_socket);
 
-    sockAddr.sin_family = AF_INET;
-    sockAddr.sin_addr.s_addr = INADDR_ANY;
-    sockAddr.sin_port = htons(getPort());
+    socket_addr.sin_family = AF_INET;
+    socket_addr.sin_addr.s_addr = INADDR_ANY;
+    socket_addr.sin_port = htons(getPort());
 
-    if (bind(getServer_socket(), (struct sockaddr*)&sockAddr, sizeof(sockAddr)) == -1)
+    if (bind(getServer_socket(), (struct sockaddr*)&socket_addr, sizeof(socket_addr)) == -1)
         return std::cerr << "Error: bind." << std::endl, (void)NULL;
 
     if (listen(getServer_socket(), SOMAXCONN) == -1)

@@ -17,7 +17,7 @@ all: ${NAME}
 ${NAME}: ${OBJ}
 		 ${C++} ${OBJ} -o $@
  
-%.o: %.cpp ${HEADER}
+%.o: %.cpp ${HEADER} Makefile
 	 ${C++} ${CPPFLAGS} -c $<
 
 clean:
