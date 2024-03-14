@@ -6,7 +6,6 @@ channels_c::channels_c() {
 channels_c::~channels_c() {
 }
 
-
 std::string channels_c::getName() {
     return _channel_name;
 }

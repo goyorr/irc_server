@@ -15,7 +15,6 @@ int is_end(std::string str, int *i)
     
 }
 
-
 std::pair<int, std::string> user_parse(std::string usr)     // mlk 0 * realname
 {
     std::pair <int , std::string> res;
@@ -61,7 +60,6 @@ std::pair<int, std::string> user_parse(std::string usr)     // mlk 0 * realname
     res.first = 0;
     return res;
 }
-
 
 std::pair<int, std::string> regi_parse(std::string str, int flag)
 {
