@@ -35,12 +35,16 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
                     std::cerr << "Error: send." << std::endl;
             }
         }
-        else if (cmd == "JOIN") {
+        else if (cmd == "JOIN")
             join(buffer, client_socket);
-        }
-        // else if (cmd == "KICK") {
-        //     kick(buffer, client_socket);
-        // }
+        else if (cmd == "KICK")
+            kick_cmd(buffer, client_socket);
+        else if (cmd == "INVITE")
+            invite_cmd(buffer, client_socket);
+        else if (cmd == "TOPIC")
+            topic_cmd(buffer, client_socket);
+        else if (cmd == "MODE")
+            mode_cmd(buffer, client_socket);
         else if (cmd == "QUIT") {
             std::string message = ":" + clients_map[client_socket].getClient_nick() + " QUIT :lol\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
@@ -158,7 +162,7 @@ void    server_c::join(const std::string &buffer, const uint16_t &client_socket)
                 std::cerr << "Error: send." << std::endl;
         }
         else {
-            if (channels_map[join_pair[i].first].getProtected()) {
+            if (channels_map[join_pair[i].first].getisProtected()) {
                 if (join_pair[i].second != channels_map[join_pair[i].first].getChannelPassword())
                     message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)

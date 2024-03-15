@@ -34,9 +34,26 @@ class server_c {
                 void                priv_msg(const std::string &buffer, const uint16_t &client_socket);
                 void                join(const std::string &buffer, const uint16_t &client_socket);
 
-                void kicker();
-
                 static void         signalHandler(int signal);
+
+                //oeprator commands.
+                void                mode_cmd(const std::string &buffer, const uint16_t &client_socket);
+                void                mode_i(std::string channel_name, uint16_t client_socket, bool set);
+                void                mode_t(std::string channel_name, uint16_t client_socket, bool set);
+                void                mode_k(std::string channel_name, uint16_t client_socket, std::string password, bool set);
+                void                mode_o(std::string channel_name, uint16_t client_socket, uint16_t target, std::string op);
+                void                mode_l(std::string channel_name, uint16_t client_socket, bool set, uint16_t limit);
+
+                void                kick_cmd(const std::string &buffer, const uint16_t &client_socket);
+                void                invite_cmd(const std::string &buffer, const uint16_t &client_socket);
+                void                topic_cmd(const std::string &buffer, const uint16_t &client_socket);
+
+                //cancer
+                void                mode_i_pars(const std::string &buffer, const uint16_t &client_socket);
+                void                mode_t_pars(const std::string &buffer, const uint16_t &client_socket);
+                void                mode_k_pars(const std::string &buffer, const uint16_t &client_socket);
+                void                mode_o_pars(const std::string &buffer, const uint16_t &client_socket);
+                void                mode_l_pars(const std::string &buffer, const uint16_t &client_socket);
 };
 
 #endif
