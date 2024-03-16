@@ -18,7 +18,7 @@ bool    channels_c::getisProtected() {
     return _isprotected;
 }
 
-uint16_t    channels_c::getuser_limit() {
+uint32_t    channels_c::getuser_limit() {
     return _user_limit;
 }
 
@@ -50,7 +50,7 @@ void    channels_c::setisProtected(const bool &tmp) {
     _isprotected = tmp;
 }
 
-void    channels_c::setuser_limit(uint16_t tmp) {
+void    channels_c::setuser_limit(uint32_t tmp) {
     _user_limit = tmp;
 }
 

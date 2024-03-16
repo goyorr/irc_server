@@ -1,6 +1,6 @@
 #include "headers/includes.h"
 
-void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_socket) {
     if (clients_map.find(client_socket) != clients_map.end() && clients_map[client_socket].getRegistered()) {
         std::string cmd = select_cmd(buffer);
 
@@ -13,10 +13,10 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
         }
         else if (cmd == "NICK") {
             std::string message;
-            std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
+            std::pair<uint32_t, std::string> nickpair = regi_parse(buffer, 1);
 
             if (!nickpair.first) {
-                for (std::map<uint16_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
+                for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
                     if (nickpair.second == clients_map[it->first].getClient_nick()) {
                         std::string err = ":" + nickpair.second + ":Nickname is already in use\n";
                     if (send(client_socket, err.c_str(), err.size(), 0) == -1)
@@ -52,7 +52,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
             std::cout << "#" << client_socket << " disconnected" << std::endl;
             clients_map.erase(client_socket);
             for (size_t i = 0; i < client_c::_disc.size(); i++) {
-                if (client_c::_disc[i].fd == client_socket)
+                if (client_c::_disc[i].fd == static_cast<int>(client_socket))
                     client_c::_disc.erase(client_c::_disc.begin() + i);
             }
             if (close(client_socket) == -1)
@@ -87,18 +87,18 @@ void    server_c::pars_cmd(const std::string &buffer, const uint16_t &client_soc
     }
 }
 
-void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_socket) {
     std::pair<std::vector<std::string>, std::string> msgpair = prvmsg_parse(buffer);
 
     if (!msgpair.first.empty()) {
         for (size_t i = 0; i < msgpair.first.size(); i++) {
-            std::vector<uint16_t> pool;
+            std::vector<uint32_t> pool;
             if (msgpair.first[i][0] == '#') {
                 if (channels_map.find(msgpair.first[i]) != channels_map.end()) {
                     pool.insert(pool.end(), channels_map[msgpair.first[i]]._members.begin(), channels_map[msgpair.first[i]]._members.end());
 
-                    std::set<uint16_t> betterPool(pool.begin(), pool.end());
-                    for (std::set<uint16_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
+                    std::set<uint32_t> betterPool(pool.begin(), pool.end());
+                    for (std::set<uint32_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
                         if (*it == client_socket)
                             continue;
                         std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + msgpair.first[i] + " :" + msgpair.second + "\r\n";
@@ -116,10 +116,10 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
             }
         }
 
-        std::vector<uint16_t> pool;
+        std::vector<uint32_t> pool;
         for (size_t i = 0; i < msgpair.first.size(); i++) {
             bool a = false;
-            for (std::map<uint16_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
+            for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
                 if (clients_map[it->first].getClient_nick() == msgpair.first[i]) {
                     pool.push_back(it->first);
                     a = true;
@@ -132,8 +132,8 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
                     std::cerr << "Error: send." << std::endl;
             }
         }
-        std::set<uint16_t> betterPool(pool.begin(), pool.end());
-        for (std::set<uint16_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
+        std::set<uint32_t> betterPool(pool.begin(), pool.end());
+        for (std::set<uint32_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
             if (*it == client_socket)
                 continue;
             std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + clients_map[*it].getClient_nick() +" :" + msgpair.second + "\r\n";
@@ -143,15 +143,23 @@ void    server_c::priv_msg(const std::string &buffer, const uint16_t &client_soc
     }
 }
 
-void    server_c::join(const std::string &buffer, const uint16_t &client_socket) {
+
+//add send() topic when connected
+//check if channel has user limit and is at max
+//check if  channel is invite only
+
+//check if already in channel ignore.
+void    server_c::join(const std::string &buffer, const uint32_t &client_socket) {
     std::vector<std::pair<std::string, std::string> >   join_pair = join_kick(buffer, 0);
     std::string                                         message;
 
+    std::cout << join_pair[0].first << "\n";
     for (size_t i = 0; i < join_pair.size(); i++) {
         if (join_pair[i].first[join_pair[i].first.size() - 1] == 13)
             join_pair[i].first = join_pair[i].first.substr(0, join_pair[i].first.size() - 1);
         if (channels_map.find(join_pair[i].first) == channels_map.end()) {
             channels_c newChnl;
+    std::cout << "created" << "\n";
 
             channels_map[join_pair[i].first] = newChnl;
             channels_map[join_pair[i].first].setName(join_pair[i].first);
@@ -160,6 +168,12 @@ void    server_c::join(const std::string &buffer, const uint16_t &client_socket)
             message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + join_pair[i].first + "\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
+            message = "353 " + clients_map[client_socket].getClient_nick() + " = " + join_pair[i].first + " :@" +clients_map[client_socket].getClient_nick() + "\n";
+            if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                std::cerr << "Error: send." << std::endl;
+            message = "366 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + " :End of /NAMES list\n";
+            if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
         }
         else {
             if (channels_map[join_pair[i].first].getisProtected()) {
@@ -179,9 +193,9 @@ void    server_c::join(const std::string &buffer, const uint16_t &client_socket)
                 for (size_t j = 0; j < channels_map[join_pair[i].first]._members.size(); j++) {
                     if (std::find(channels_map[join_pair[i].first]._operators.begin(), channels_map[join_pair[i].first]._operators.end(),
                         channels_map[join_pair[i].first]._members[j]) != channels_map[join_pair[i].first]._operators.end())
-                        users += " @" + clients_map[channels_map[join_pair[i].first]._members[j]].getClient_nick();
+                        users += "@" + clients_map[channels_map[join_pair[i].first]._members[j]].getClient_nick() + " ";
                     else
-                        users += " " + clients_map[channels_map[join_pair[i].first]._members[j]].getClient_nick();
+                        users += clients_map[channels_map[join_pair[i].first]._members[j]].getClient_nick() + " ";
                 }
                 message = "353 " + clients_map[client_socket].getClient_nick() + " = " + join_pair[i].first + " :" + users + "\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)

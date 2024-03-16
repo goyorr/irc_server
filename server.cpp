@@ -14,11 +14,11 @@ void    server_c::setPassword(const std::string &tmp) {
     _password = tmp;
 }
 
-void    server_c::setServer_socket(const uint16_t &tmp) {
+void    server_c::setServer_socket(const uint32_t &tmp) {
     _server_socket = tmp;
 }
 
-uint16_t server_c::getPort() const {
+uint32_t server_c::getPort() const {
     return _port;
 }
 
@@ -26,7 +26,7 @@ const std::string server_c::getPassword() const {
     return _password;
 }
 
-uint16_t server_c::getServer_socket() const {
+uint32_t server_c::getServer_socket() const {
     return _server_socket;
 }
 
@@ -84,7 +84,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
             continue ;
         for (size_t i = 0; i < client_c::_disc.size(); ++i) {
             if (client_c::_disc[i].revents) {
-                if (client_c::_disc[i].fd == getServer_socket()) {
+                if (client_c::_disc[i].fd == static_cast<int>(getServer_socket())) {
                     tmp_client_socket = accept(getServer_socket(), NULL, NULL);
                     if (tmp_client_socket == -1)
                         return std::cerr << "Error: accept." << std::endl, (void)NULL;
@@ -103,8 +103,10 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                         if (bytes == -1)
                             return std::cerr << "Error: recv." << std::endl, (void)NULL;
                         buffer[bytes] = '\0';
-                        if (bytes >= 1)
+                        if (bytes >= 1) {
+                            std::cout << buffer;
                             server_c::pars_cmd(buffer, client_c::_disc[i].fd);
+                        }
                         else if (bytes == 0) {
                             if (close(client_c::_disc[i].fd) == -1)
                                 std::cerr << "Error: close." << std::endl;

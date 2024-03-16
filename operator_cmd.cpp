@@ -1,8 +1,8 @@
 #include "headers/includes.h"
 
-void    server_c::mode_cmd(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_socket) {
     // after parsing get mode and channel_name
-    uint16_t    mode = 0;
+    uint32_t    mode = 0;
     std::string channel_name;
 
     //check if channel exists and user is in that channel and is an operator.
@@ -24,44 +24,44 @@ void    server_c::mode_cmd(const std::string &buffer, const uint16_t &client_soc
     }
 }
 
-void    server_c::mode_i_pars(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::mode_i_pars(const std::string &buffer, const uint32_t &client_socket) {
     (void)buffer;
     std::string channel_name = "d";
     bool set = 0;
     mode_i(channel_name, client_socket, set);
 }
 
-void    server_c::mode_t_pars(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::mode_t_pars(const std::string &buffer, const uint32_t &client_socket) {
     (void)buffer;
     std::string channel_name = "d";
     bool set = 0;
     mode_t(channel_name, client_socket, set);
 }
 
-void    server_c::mode_k_pars(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::mode_k_pars(const std::string &buffer, const uint32_t &client_socket) {
     (void)buffer;
     std::string channel_name = "d", password = "e";
     bool set = 0;
     mode_k(channel_name, client_socket, password, set);
 }
 
-void    server_c::mode_o_pars(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::mode_o_pars(const std::string &buffer, const uint32_t &client_socket) {
     (void)buffer;
     std::string channel_name = "d", op = "d";
-    uint16_t target = 0;
+    uint32_t target = 0;
     mode_o(channel_name, client_socket, target, op);
 }
 
-void    server_c::mode_l_pars(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::mode_l_pars(const std::string &buffer, const uint32_t &client_socket) {
     (void)buffer;
     std::string channel_name = "D";
     bool set = 0;
-    uint16_t limit = 0;
+    uint32_t limit = 0;
     mode_l(channel_name, client_socket, set, limit);
 }
 
 //done + add send.
-void    server_c::mode_i(std::string channel_name, uint16_t client_socket, bool set) {
+void    server_c::mode_i(std::string channel_name, uint32_t client_socket, bool set) {
     (void)client_socket;
     if (set)
         channels_map[channel_name].setisinvite_only(true);
@@ -69,7 +69,7 @@ void    server_c::mode_i(std::string channel_name, uint16_t client_socket, bool 
         channels_map[channel_name].setisinvite_only(false);
 }
 //done + add send.
-void    server_c::mode_t(std::string channel_name, uint16_t client_socket, bool set) {
+void    server_c::mode_t(std::string channel_name, uint32_t client_socket, bool set) {
     (void)client_socket;
     if (set)
         channels_map[channel_name].setisrestricted_topic(true);
@@ -77,7 +77,7 @@ void    server_c::mode_t(std::string channel_name, uint16_t client_socket, bool 
         channels_map[channel_name].setisrestricted_topic(false);
 }
 //done + add send.
-void    server_c::mode_k(std::string channel_name, uint16_t client_socket, std::string password, bool set) {
+void    server_c::mode_k(std::string channel_name, uint32_t client_socket, std::string password, bool set) {
     (void)client_socket;
     if (set) {
         channels_map[channel_name].setChannelPassword(password);
@@ -89,7 +89,7 @@ void    server_c::mode_k(std::string channel_name, uint16_t client_socket, std::
     }
 }
 //done + add send.
-void    server_c::mode_o(std::string channel_name, uint16_t client_socket, uint16_t target, std::string op) {
+void    server_c::mode_o(std::string channel_name, uint32_t client_socket, uint32_t target, std::string op) {
     (void)client_socket;
     if (std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), client_socket)
             != channels_map[channel_name]._operators.end()) {
@@ -101,7 +101,7 @@ void    server_c::mode_o(std::string channel_name, uint16_t client_socket, uint1
         channels_map[channel_name]._operators.erase(std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), target));
 }
 
-void    server_c::mode_l(std::string channel_name, uint16_t client_socket, bool set, uint16_t limit) {
+void    server_c::mode_l(std::string channel_name, uint32_t client_socket, bool set, uint32_t limit) {
     (void)client_socket;
     if (set) {
         channels_map[channel_name].setuser_limit(limit);
@@ -111,17 +111,17 @@ void    server_c::mode_l(std::string channel_name, uint16_t client_socket, bool 
         channels_map[channel_name].setisuser_limit(true);
 }
 
-void    server_c::kick_cmd(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_socket) {
     (void)buffer;
     (void)client_socket;
 }
 
-void    server_c::invite_cmd(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_socket) {
     (void)buffer;
     (void)client_socket;
 }
 
-void    server_c::topic_cmd(const std::string &buffer, const uint16_t &client_socket) {
+void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_socket) {
     //after pars return channel name andd topic;
     (void)buffer;
     std::string channel_name;

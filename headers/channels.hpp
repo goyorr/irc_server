@@ -6,7 +6,7 @@ class channels_c {
             std::string _channel_name;
             std::string _channel_password;
             std::string _channel_topic;
-            uint16_t    _user_limit;
+            uint32_t    _user_limit;
             bool        _isprotected;
             bool        _isinvite_only;
             bool        _isrestricted_topic;
@@ -15,13 +15,13 @@ class channels_c {
             channels_c();
             ~channels_c();
 
-            std::vector<uint16_t>       _operators;
-            std::vector<uint16_t>       _members;
+            std::vector<uint32_t>       _operators;
+            std::vector<uint32_t>       _members;
 
             std::string getName();
             std::string getChannelPassword();
             std::string getTopic();
-            uint16_t    getuser_limit();
+            uint32_t    getuser_limit();
             bool        getisProtected();
             bool        getisinvite_only();
             bool        getisrestricted_topic();
@@ -30,7 +30,7 @@ class channels_c {
             void        setName(const std::string &tmp);
             void        setChannelPassword(const std::string &tmp);
             void        setTopic(std::string tmp);
-            void        setuser_limit(uint16_t tmp);
+            void        setuser_limit(uint32_t tmp);
             void        setisProtected(const bool &tmp);
             void        setisinvite_only(bool tmp);
             void        setisrestricted_topic(bool tmp);
