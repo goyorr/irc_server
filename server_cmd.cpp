@@ -153,13 +153,11 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
     std::vector<std::pair<std::string, std::string> >   join_pair = join_kick(buffer, 0);
     std::string                                         message;
 
-    std::cout << join_pair[0].first << "\n";
     for (size_t i = 0; i < join_pair.size(); i++) {
         if (join_pair[i].first[join_pair[i].first.size() - 1] == 13)
             join_pair[i].first = join_pair[i].first.substr(0, join_pair[i].first.size() - 1);
         if (channels_map.find(join_pair[i].first) == channels_map.end()) {
             channels_c newChnl;
-    std::cout << "created" << "\n";
 
             channels_map[join_pair[i].first] = newChnl;
             channels_map[join_pair[i].first].setName(join_pair[i].first);
@@ -176,9 +174,11 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
                     std::cerr << "Error: send." << std::endl;
         }
         else {
-            if (channels_map[join_pair[i].first].getisProtected()) {
-                if (join_pair[i].second != channels_map[join_pair[i].first].getChannelPassword())
-                    message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel\n";
+            if (std::find(channels_map[join_pair[i].first]._members.begin(), channels_map[join_pair[i].first]._members.end(),
+                    client_socket) == channels_map[join_pair[i].first]._members.end())
+                ;
+            else if (channels_map[join_pair[i].first].getisProtected() && join_pair[i].second != channels_map[join_pair[i].first].getChannelPassword()) {
+                message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
@@ -203,8 +203,6 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
                 message = "366 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + " :End of /NAMES list\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
-
-                return ;
             }
         }
     }
