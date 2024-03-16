@@ -1,6 +1,10 @@
 NAME = ircserv
 
-DEPS = ${NAME}.d
+SRC = ${shell ls | grep ".cpp"}
+
+OBJ = ${SRC:.cpp=.o}
+
+DEPS = ${SRC:.cpp=.d}
 
 C++ = c++
 
@@ -10,15 +14,18 @@ CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD -MP
 
 all: ${NAME}
 
-${NAME}: Makefile
-	${C++} ${CPPFLAGS} ${shell ls | grep ".cpp"} -o $@
+${NAME}: ${OBJ}
+	${C++} ${OBJ} -o $@
 
 -include ${DEPS}
 
+%.o: %.cpp Makefile
+	${C++} ${CPPFLAGS} -c $<
+
 clean:
-	${RM} ${DEPS}
+	${RM} ${OBJ}
 
 fclean: clean
-	${RM} ${NAME}
+	${RM} ${NAME} ${DEPS}
 
 re: fclean all
