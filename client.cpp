@@ -9,6 +9,8 @@ client_c::client_c() {
         _client_socket = -1;
         _registered = false;
         _authed = false;
+        _nickReg  = false;
+        _userReg  = false;
 }
 
 client_c::~client_c() {
