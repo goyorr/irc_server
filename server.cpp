@@ -104,9 +104,11 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                         if (bytes == -1)
                             return std::cerr << "Error: recv." << std::endl, (void)NULL;
                         if (bytes >= 1) {
+                            buffer[bytes] = '\0';
                             //make a new buffer for every socket.
                             // if (client_c::_buffer[i][bytes] == '\n');
                             //     server_c::pars_cmd(client_c::_buffer[i], client_c::_disc[i].fd);
+                            std::cout << buffer;
                             server_c::pars_cmd(buffer, client_c::_disc[i].fd);
                         }
                         else if (bytes == 0) {

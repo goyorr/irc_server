@@ -3,6 +3,7 @@ bircd
 .vscode
 .DS_Store
 *.o
+*.d
 ircserv
 *.txt
 .*
