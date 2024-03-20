@@ -1,63 +1,37 @@
 #include "headers/includes.h"
 
 void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_socket) {
-    // after parsing get mode and channel_name
+
+    std::pair <std::string, std::pair<std::string, std::string> > pair_mode = parse_mode(buffer);
     uint32_t    mode = 0;
-    std::string channel_name;
-
-    //check if channel exists and user is in that channel and is an operator.
-    switch(mode) {
-        case(100)://i
-            mode_i_pars(buffer, client_socket);
-            break;
-        case(116)://t
-            mode_t_pars(buffer, client_socket);
-            break;
-        case(107)://k
-            mode_k_pars(buffer, client_socket);
-            break;
-        case(111)://o
-            mode_o_pars(buffer, client_socket);
-            break;
-        case(108)://l
-            mode_l_pars(buffer, client_socket);
+    std::string chanel_name = pair_mode.first;
+    std::string modes = pair_mode.second.first;  // +i+t+l
+    std::string subjects = pair_mode.second.second;
+    std::vector<std::string> subs;  //gshdgh,hsfdhsd,hsgdhsgd,hgdhsgd
+    if (subjects.size() > 0)
+        subs = sort_subs(subjects);
+    size_t s = 0;
+    for (size_t i = 0; i < modes.size(); i += 2)
+    {
+        mode = (int)modes[i+1];
+        switch(mode) {
+            case(100)://i
+                mode_i(chanel_name, client_socket, modes[i] != '+' ? true : false);
+                break;
+            case(116)://t
+                mode_t(chanel_name, client_socket, modes[i] == '+' ? true : false);
+                break;
+            case(107)://k
+                mode_k(chanel_name, client_socket, subs.size() < s ? subs[s] : "", modes[i] == '+' ? true : false); s++;
+                break;
+            case(111)://o
+                mode_o(chanel_name, client_socket, subs.size() < s ? subs[s] : "", modes[i] == '+' ? true : false); s++;
+                break;
+            case(108)://l
+                mode_l(chanel_name, client_socket, modes[i] == '+' ? true : false, subs.size() < s ? subs[s] : ""); s++;
+                break;
+        }
     }
-}
-
-void    server_c::mode_i_pars(const std::string &buffer, const uint32_t &client_socket) {
-    (void)buffer;
-    std::string channel_name = "d";
-    bool set = 0;
-    mode_i(channel_name, client_socket, set);
-}
-
-void    server_c::mode_t_pars(const std::string &buffer, const uint32_t &client_socket) {
-    (void)buffer;
-    std::string channel_name = "d";
-    bool set = 0;
-    mode_t(channel_name, client_socket, set);
-}
-
-void    server_c::mode_k_pars(const std::string &buffer, const uint32_t &client_socket) {
-    (void)buffer;
-    std::string channel_name = "d", password = "e";
-    bool set = 0;
-    mode_k(channel_name, client_socket, password, set);
-}
-
-void    server_c::mode_o_pars(const std::string &buffer, const uint32_t &client_socket) {
-    (void)buffer;
-    std::string channel_name = "d", op = "d";
-    uint32_t target = 0;
-    mode_o(channel_name, client_socket, target, op);
-}
-
-void    server_c::mode_l_pars(const std::string &buffer, const uint32_t &client_socket) {
-    (void)buffer;
-    std::string channel_name = "D";
-    bool set = 0;
-    uint32_t limit = 0;
-    mode_l(channel_name, client_socket, set, limit);
 }
 
 //done + add send.
@@ -89,22 +63,25 @@ void    server_c::mode_k(std::string channel_name, uint32_t client_socket, std::
     }
 }
 //done + add send.
-void    server_c::mode_o(std::string channel_name, uint32_t client_socket, uint32_t target, std::string op) {
+void    server_c::mode_o(std::string channel_name, uint32_t client_socket, std::string target, bool set) {
     (void)client_socket;
+    (void)target;
     if (std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), client_socket)
             != channels_map[channel_name]._operators.end()) {
         //send
     }
-    else if (op == "give")
-        channels_map[channel_name]._operators.push_back(target);
+    else if (set)
+        ;// channels_map[channel_name]._operators.push_back(target);
     else
-        channels_map[channel_name]._operators.erase(std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), target));
+        // channels_map[channel_name]._operators.erase(std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), target));
+        ;
 }
 
-void    server_c::mode_l(std::string channel_name, uint32_t client_socket, bool set, uint32_t limit) {
+void    server_c::mode_l(std::string channel_name, uint32_t client_socket, bool set, std::string limit) {
+    (void)limit;
     (void)client_socket;
     if (set) {
-        channels_map[channel_name].setuser_limit(limit);
+        // channels_map[channel_name].setuser_limit(limit);
         channels_map[channel_name].setisuser_limit(true);
     }
     else

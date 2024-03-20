@@ -41,19 +41,12 @@ class server_c {
                 void                mode_i(std::string channel_name, uint32_t client_socket, bool set);
                 void                mode_t(std::string channel_name, uint32_t client_socket, bool set);
                 void                mode_k(std::string channel_name, uint32_t client_socket, std::string password, bool set);
-                void                mode_o(std::string channel_name, uint32_t client_socket, uint32_t target, std::string op);
-                void                mode_l(std::string channel_name, uint32_t client_socket, bool set, uint32_t limit);
+                void                mode_o(std::string channel_name, uint32_t client_socket, std::string target, bool set);
+                void                mode_l(std::string channel_name, uint32_t client_socket, bool set, std::string limit);
 
                 void                kick_cmd(const std::string &buffer, const uint32_t &client_socket);
                 void                invite_cmd(const std::string &buffer, const uint32_t &client_socket);
                 void                topic_cmd(const std::string &buffer, const uint32_t &client_socket);
-
-                //cancer
-                void                mode_i_pars(const std::string &buffer, const uint32_t &client_socket);
-                void                mode_t_pars(const std::string &buffer, const uint32_t &client_socket);
-                void                mode_k_pars(const std::string &buffer, const uint32_t &client_socket);
-                void                mode_o_pars(const std::string &buffer, const uint32_t &client_socket);
-                void                mode_l_pars(const std::string &buffer, const uint32_t &client_socket);
 };
 
 #endif

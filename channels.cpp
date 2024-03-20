@@ -38,6 +38,10 @@ std::string channels_c::getTopic() {
     return _channel_topic;
 }
 
+uint32_t    channels_c::getuser_count() {
+    return _user_count;
+}
+
 void    channels_c::setName(const std::string &tmp) {
     _channel_name = tmp;
 }
@@ -68,4 +72,8 @@ void    channels_c::setisuser_limit(bool tmp) {
 
 void    channels_c::setTopic(std::string tmp) {
     _channel_topic = tmp;
+}
+
+void        channels_c::incrementUser_count() {
+    _user_count++;
 }
