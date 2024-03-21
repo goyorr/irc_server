@@ -218,12 +218,12 @@ void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_so
             std::string message;
             if (topic == ":") {
                 message =  clients_map[client_socket].getClient_nick() + " " + channel_name
-                + "TOPIC :" + clients_map[client_socket].getClient_nick() + " has cleared the channel's topic\n";
+                + " TOPIC :" + clients_map[client_socket].getClient_nick() + " has cleared the channel's topic\n";
                 channels_map[channel_name].setTopic(NULL), void(NULL);
             }
             else {
                 message =  clients_map[client_socket].getClient_nick() + " " + channel_name
-                + "TOPIC :" + clients_map[client_socket].getClient_nick() + " has set new topic to " + topic + "\n";
+                + " TOPIC :" + clients_map[client_socket].getClient_nick() + " has set new topic to " + topic + "\n";
                 channels_map[channel_name].setTopic(topic), void(NULL);
             }
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
