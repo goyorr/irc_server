@@ -179,10 +179,10 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
 
 void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_socket) {
     //after pars return channel name andd topic;
-    (void)buffer;
-    std::string channel_name;
-    std::string topic;
 
+    std::pair<std::string, std::string> to_pair = topic_parse(buffer);
+    std::string channel_name = to_pair.first;
+    std::string topic = to_pair.second;
     if (channels_map.find(channel_name) != channels_map.end()) {
         if (std::find(channels_map[channel_name]._members.begin(), channels_map[channel_name]._members.end(), client_socket)
             != channels_map[channel_name]._members.end()) {

@@ -23,5 +23,6 @@ std::string                                         select_cmd(std::string buffe
 std::vector<std::pair<std::string, std::string> >   join_kick(std::string buffer, int jk);
 std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::string buffer);
 std::vector<std::string> sort_subs(std::string subjects);
+std::pair<std::string, std:: string> topic_parse(std::string buffer);
 
 #endif

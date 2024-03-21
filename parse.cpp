@@ -268,3 +268,52 @@ std::vector<std::string> sort_subs(std::string subjects) {
     }
     return res;
 }
+
+
+std::pair<std::string, std:: string> topic_parse(std::string buffer) {
+
+    std::pair<std::string, std::string> res;
+    int i = buffer.find('C');
+    i++;
+    while (is_ws(buffer[i]))
+        i++;
+    if (is_end(buffer, &i))
+    {
+        res.first = ""; // no chanel;
+        return res;
+    }
+    int pos = i;
+    while (!is_ws(buffer[i]) && !is_end(buffer, &i))
+        i++;
+    std::string chanel = buffer.substr(pos, i - pos);
+    res.first = chanel;
+
+    while(is_ws(buffer[i]))
+        i++;
+    if (is_end(buffer, &i))
+    {
+        res.second = "";
+        return res;
+    }
+    pos = i;
+    while (!is_ws(buffer[i]))
+        i++;
+    std::string semi = ":";
+    i++;
+    while (is_ws(buffer[i]))
+        i++;
+    if (is_end(buffer, &i))
+    {
+        res.second = ":";
+        return res;
+    }
+    else{
+        pos = i;
+        while (!is_end(buffer, &i))
+            i++;
+        std::string topic = buffer.substr(pos, i - pos);
+        res.second = topic;
+        
+    }
+    return res;
+}

@@ -147,8 +147,12 @@ void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_soc
 //add send() topic when connected
 
 void    server_c::join(const std::string &buffer, const uint32_t &client_socket) {
+    puts ("ok");
     std::vector<std::pair<std::string, std::string> >   join_pair = join_kick(buffer, 0);
     std::string                                         message;
+
+    std::cout << join_pair[0].first << std::endl;
+    std::cout << join_pair[1].first << std::endl;
 
     for (size_t i = 0; i < join_pair.size(); i++) {
         if (join_pair[i].first[join_pair[i].first.size() - 1] == 13)
