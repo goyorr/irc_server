@@ -11,24 +11,26 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
     if (subjects.size() > 0)
         subs = sort_subs(subjects);
 
+    //fix 
+    if (channel_name == "400" || modes == "400")
+        return ;
+
     //check if channels exists.
-    if (channels_map.find(channel_name) != channels_map.end()) {
+    if (channels_map.find(channel_name) == channels_map.end()) {
         std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No such channel\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return ;
     }
     //check if user joined the channel.
-    if (std::find(channels_map[channel_name]._members.begin(), channels_map[channel_name]._members.end(), client_socket)
-        != channels_map[channel_name]._members.end()) {
+    if (!search_user(channels_map, client_socket, 'm', channel_name)) {
         std::string err = "442 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not on that channel\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return ;
     }
     //check if caller is an operatoer of that channel
-    if (std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), client_socket)
-            == channels_map[channel_name]._operators.end()) {
+    if (!search_user(channels_map, client_socket, 'o', channel_name)) {
         std::string err = "482 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not channel operator\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
@@ -38,6 +40,7 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
     size_t s = 0;
     for (size_t i = 0; i < modes.size(); i += 2)
     {
+        //fix: subs strings has 2 extra characters.
         mode = (int)modes[i+1];
         switch(mode) {
             case(100):
@@ -47,10 +50,12 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
                 mode_t(channel_name, client_socket, modes[i] == '+' ? true : false);
                 break;
             case(107):
-                mode_k(channel_name, client_socket, subs.size() < s ? subs[s] : "", modes[i] == '+' ? true : false); s++;
+                //tmp fix.
+                subs[s] = subs[s].substr(0, subs[s].size() - 2);
+                mode_k(channel_name, client_socket, subs.size() > s ? subs[s] : "", modes[i] == '+' ? true : false); s++;
                 break;
             case(111):
-                mode_o(channel_name, client_socket, subs.size() < s ? subs[s] : "", modes[i] == '+' ? true : false); s++;
+                mode_o(channel_name, client_socket, subs.size() > s ? subs[s] : "", modes[i] == '+' ? true : false); s++;
                 break;
             case(108):
                 mode_l(channel_name, client_socket, modes[i] == '+' ? true : false, subs.size() < s ? subs[s] : ""); s++;
@@ -129,7 +134,7 @@ void    server_c::mode_o(std::string channel_name, uint32_t client_socket, std::
             std::cerr << "Error: send." << std::endl; 
     }
     else if (set) {
-        if (std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), target_socket) == channels_map[channel_name]._operators.end()) {
+        if (search_user(channels_map, target_socket, 'o', channel_name)) {
             channels_map[channel_name]._operators.push_back(target_socket);
             std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +o " + target + "\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
@@ -137,7 +142,7 @@ void    server_c::mode_o(std::string channel_name, uint32_t client_socket, std::
         }
     }
     else {
-        if (std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), target_socket) != channels_map[channel_name]._operators.end()) {
+        if (search_user(channels_map, target_socket, 'o', channel_name)) {
             channels_map[channel_name]._operators.erase(std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), target_socket));
             std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -o " + target + "\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
@@ -184,8 +189,7 @@ void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_so
     std::string channel_name = to_pair.first;
     std::string topic = to_pair.second;
     if (channels_map.find(channel_name) != channels_map.end()) {
-        if (std::find(channels_map[channel_name]._members.begin(), channels_map[channel_name]._members.end(), client_socket)
-            != channels_map[channel_name]._members.end()) {
+        if (!search_user(channels_map, client_socket, 'm', channel_name)) {
             std::string err = "442 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not on that channel\n";
             if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
@@ -204,8 +208,7 @@ void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_so
         //chanege mode.
         else {
             if (channels_map[channel_name].getisrestricted_topic()) {
-                if (std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), client_socket)
-                == channels_map[channel_name]._operators.end()) {
+                if (!search_user(channels_map, client_socket, 'o', channel_name)) {
                     std::string err = "482 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not channel operator\n";
                     if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                         std::cerr << "Error: send." << std::endl;

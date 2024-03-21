@@ -89,7 +89,6 @@ if (!no_pss)
         i = cpos + 1;
     }
 }
-    puts("BRUHH");
 
 if (jk == 0)
 {

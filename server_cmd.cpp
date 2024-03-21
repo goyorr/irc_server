@@ -143,18 +143,20 @@ void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_soc
     }
 }
 
-
 //add send() topic when connected
-
+//add if only user in channel quit delete channel.
 void    server_c::join(const std::string &buffer, const uint32_t &client_socket) {
-    puts ("ok");
     std::vector<std::pair<std::string, std::string> >   join_pair = join_kick(buffer, 0);
     std::string                                         message;
 
-    std::cout << join_pair[0].first << std::endl;
-    std::cout << join_pair[1].first << std::endl;
-
+    //check if channel starts with #
     for (size_t i = 0; i < join_pair.size(); i++) {
+        if (join_pair[i].first[0] != '#') {
+            std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + " :No such channel\n";
+            if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+                std::cerr << "Error: send." << std::endl;
+            continue ;
+        }
         if (join_pair[i].first[join_pair[i].first.size() - 1] == 13)
             join_pair[i].first = join_pair[i].first.substr(0, join_pair[i].first.size() - 1);
         if (channels_map.find(join_pair[i].first) == channels_map.end()) {
@@ -175,8 +177,7 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
                     std::cerr << "Error: send." << std::endl;
         }
         else {
-            if (std::find(channels_map[join_pair[i].first]._members.begin(), channels_map[join_pair[i].first]._members.end(),
-                    client_socket) != channels_map[join_pair[i].first]._members.end())
+            if (search_user(channels_map, client_socket, 'm', join_pair[i].first))
                 ;
             else if (channels_map[join_pair[i].first].getisinvite_only()) {
                 message = "473 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel (+i)\n";
@@ -189,7 +190,7 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
                     std::cerr << "Error: send." << std::endl;
             }
             else if (channels_map[join_pair[i].first].getisProtected() && join_pair[i].second != channels_map[join_pair[i].first].getChannelPassword()) {
-                message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel\n";
+                message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel (+k)\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }

@@ -47,6 +47,18 @@ class server_c {
                 void                kick_cmd(const std::string &buffer, const uint32_t &client_socket);
                 void                invite_cmd(const std::string &buffer, const uint32_t &client_socket);
                 void                topic_cmd(const std::string &buffer, const uint32_t &client_socket);
+
+                template<typename container>
+                bool    search_user(container location, uint32_t target, char type, std::string key) {
+                    if (type == 'm') {
+                        if (std::find(location[key]._members.begin(), location[key]._members.end(), target) == location[key]._members.end())
+                            return false;
+                        return true;
+                    }
+                    if (std::find(location[key]._operators.begin(), location[key]._operators.end(), target) == location[key]._operators.end())
+                        return false;
+                    return true;
+                }
 };
 
 #endif

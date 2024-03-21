@@ -1,6 +1,10 @@
 #include "./headers/includes.h"
 
 channels_c::channels_c() {
+    _isprotected = false;
+    _isinvite_only = false;
+    _isrestricted_topic = false;
+    _isuser_limit = false;
 }
 
 channels_c::~channels_c() {
