@@ -14,11 +14,11 @@ void    server_c::setPassword(const std::string &tmp) {
     _password = tmp;
 }
 
-void    server_c::setServer_socket(const uint16_t &tmp) {
+void    server_c::setServer_socket(const uint32_t &tmp) {
     _server_socket = tmp;
 }
 
-uint16_t server_c::getPort() const {
+uint32_t server_c::getPort() const {
     return _port;
 }
 
@@ -26,12 +26,12 @@ const std::string server_c::getPassword() const {
     return _password;
 }
 
-uint16_t server_c::getServer_socket() const {
+uint32_t server_c::getServer_socket() const {
     return _server_socket;
 }
 
 void    server_c::init_server(const std::string &tmp_port, const std::string &tmp_password) {
-    struct      sockaddr_in sockAddr;
+    struct      sockaddr_in socket_addr;
     int32_t     tmp_client_socket;
     int32_t     non_block;
     int32_t     tmp_socket;
@@ -61,11 +61,11 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
 
     setServer_socket(tmp_socket);
 
-    sockAddr.sin_family = AF_INET;
-    sockAddr.sin_addr.s_addr = INADDR_ANY;
-    sockAddr.sin_port = htons(getPort());
+    socket_addr.sin_family = AF_INET;
+    socket_addr.sin_addr.s_addr = INADDR_ANY;
+    socket_addr.sin_port = htons(getPort());
 
-    if (bind(getServer_socket(), (struct sockaddr*)&sockAddr, sizeof(sockAddr)) == -1)
+    if (bind(getServer_socket(), (struct sockaddr*)&socket_addr, sizeof(socket_addr)) == -1)
         return std::cerr << "Error: bind." << std::endl, (void)NULL;
 
     if (listen(getServer_socket(), SOMAXCONN) == -1)
@@ -84,7 +84,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
             continue ;
         for (size_t i = 0; i < client_c::_disc.size(); ++i) {
             if (client_c::_disc[i].revents) {
-                if (client_c::_disc[i].fd == getServer_socket()) {
+                if (client_c::_disc[i].fd == static_cast<int>(getServer_socket())) {
                     tmp_client_socket = accept(getServer_socket(), NULL, NULL);
                     if (tmp_client_socket == -1)
                         return std::cerr << "Error: accept." << std::endl, (void)NULL;
@@ -100,11 +100,17 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                     try {
                         char    buffer[1024];
                         bytes = recv(client_c::_disc[i].fd, buffer, 1024, 0);
+                        // bytes = recv(client_c::_disc[i].fd, client_c::_buffer[i], 1024, 0);
                         if (bytes == -1)
                             return std::cerr << "Error: recv." << std::endl, (void)NULL;
-                        buffer[bytes] = '\0';
-                        if (bytes >= 1)
+                        if (bytes >= 1) {
+                            buffer[bytes] = '\0';
+                            //make a new buffer for every socket.
+                            // if (client_c::_buffer[i][bytes] == '\n');
+                            //     server_c::pars_cmd(client_c::_buffer[i], client_c::_disc[i].fd);
+                            std::cout << buffer;
                             server_c::pars_cmd(buffer, client_c::_disc[i].fd);
+                        }
                         else if (bytes == 0) {
                             if (close(client_c::_disc[i].fd) == -1)
                                 std::cerr << "Error: close." << std::endl;
@@ -115,6 +121,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                         std::cout << std::flush;
                     }
                     catch (...) {}
+
                 }
             }
         }

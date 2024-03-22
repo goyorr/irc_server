@@ -20,6 +20,10 @@ std::pair<std::vector<std::string>, std::string >   prvmsg_parse(std::string buf
 int                                                 is_ws(int c);
 int                                                 is_end(std::string str, int *i);
 std::string                                         select_cmd(std::string buffer);
-std::vector<std::pair<std::string, std::string> >   join_kick(std::string buffer, int jk);
+std::vector<std::pair<std::string, std::string> >   join_kick_inv(std::string buffer, int jk);
+std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::string buffer);
+std::vector<std::string> sort_subs(std::string subjects);
+std::pair<std::string, std:: string> topic_parse(std::string buffer);
+std::vector<std::pair<std::string, std::string> > invite_parse(std::string buffer);
 
 #endif

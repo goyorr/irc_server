@@ -1,7 +1,7 @@
 #include "headers/includes.h"
 
-void    server_c::reg_user(const std::string &buffer, const uint16_t &client_socket) {
-    std::pair<uint16_t, std::string> userpair = regi_parse(buffer, 2);
+void    server_c::reg_user(const std::string &buffer, const uint32_t &client_socket) {
+    std::pair<uint32_t, std::string> userpair = regi_parse(buffer, 2);
 
 
     if (!userpair.first) {
@@ -29,13 +29,13 @@ void    server_c::reg_user(const std::string &buffer, const uint16_t &client_soc
     }
 }
 
-void    server_c::reg_nick(const std::string &buffer, const uint16_t &client_socket) {
-    std::pair<uint16_t, std::string> nickpair = regi_parse(buffer, 1);
+void    server_c::reg_nick(const std::string &buffer, const uint32_t &client_socket) {
+    std::pair<uint32_t, std::string> nickpair = regi_parse(buffer, 1);
 
     if (!nickpair.first) {
-        for (std::map<uint16_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
+        for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
             if (nickpair.second == clients_map[it->first].getClient_nick()) {
-                std::string err = ":" + nickpair.second + ":Nickname is already in use\n";
+                std::string err = "433" + nickpair.second + ":Nickname is already in use\n";
                 if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
                 return ;
@@ -59,8 +59,8 @@ void    server_c::reg_nick(const std::string &buffer, const uint16_t &client_soc
     }
 }
 
-void    server_c::reg_pass(const std::string &buffer, const uint16_t &client_socket) {
-    std::pair<uint16_t, std::string> pairpass = regi_parse(buffer, 0);
+void    server_c::reg_pass(const std::string &buffer, const uint32_t &client_socket) {
+    std::pair<uint32_t, std::string> pairpass = regi_parse(buffer, 0);
 
     std::string err;
 
