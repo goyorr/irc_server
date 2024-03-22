@@ -16,7 +16,7 @@ class client_c {
             ~client_c();
 
             static std::vector<pollfd> _disc;
-            static std::vector<char [1024]> _buffer;
+        //     static std::vector<char [1024]> _buffer;
 
             std::string                 getClient_nick() const;
             std::string                 getClient_user() const;

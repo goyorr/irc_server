@@ -11,7 +11,7 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
     if (subjects.size() > 0)
         subs = sort_subs(subjects);
 
-    //fix 
+    //tmp fix 
     if (channel_name == "400" || modes == "400")
         return ;
 
@@ -180,6 +180,8 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
 void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_socket) {
     (void)buffer;
     (void)client_socket;
+    // KICK #ksdni asdas;
+    // search_user(channels_map, client_socket, 'o', channel_name);
 }
 
 void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_socket) {
