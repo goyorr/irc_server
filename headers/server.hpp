@@ -55,8 +55,14 @@ class server_c {
                             return false;
                         return true;
                     }
+                    else if (type == 'o') {
                     if (std::find(location[key]._operators.begin(), location[key]._operators.end(), target) == location[key]._operators.end())
                         return false;
+                    }
+                    else if (type == 'i') {
+                        if (std::find(location[key]._invited.begin(), location[key]._invited.end(), target) == location[key]._invited.end())
+                            return false;
+                    }
                     return true;
                 }
 };

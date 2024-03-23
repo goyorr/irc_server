@@ -191,8 +191,8 @@ std::string select_cmd(std::string buffer) {
 }
 
 std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::string buffer) {
+    
     std::pair<std::string, std::pair<std::string, std::string> >res;
-
     int pos = buffer.find('E');
 
     pos++;
@@ -215,13 +215,16 @@ std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::str
         return res;
     }
     i = pos;
-    while (!is_ws(buffer[pos]))
+    while (!is_ws(buffer[pos]) && !is_end(buffer, &pos))
         pos++;
+    // if (is_end(buffer, &pos))
     std::string mods = buffer.substr(i, pos - i);
     res.second.first = mods;
+        // std::cout << "here: |" << mods << "|" << std::endl;
     size_t err = mods.find_first_not_of("itkol+-");
     if (err != std::string::npos) {
-        res.first = "400";
+        // puts ("XXX");
+        res.second.first = "X";
         return res;         // unknown mod;
     }
     else {
@@ -241,7 +244,7 @@ std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::str
             pos++;
         if (!is_end(buffer, &pos)){
             i = pos;
-            while (!is_ws(buffer[pos]))
+            while (!is_ws(buffer[pos]) && !is_end(buffer, &pos))
                 pos++;
             std::string extra = buffer.substr(i, pos - i);
             res.second.second = extra;
@@ -292,27 +295,36 @@ std::pair<std::string, std:: string> topic_parse(std::string buffer) {
         i++;
     if (is_end(buffer, &i))
     {
-        res.second = "";
+        res.second = "";      // no second arg
         return res;
     }
-    pos = i;
-    while (!is_ws(buffer[i]))
-        i++;
-    std::string semi = ":";
-    i++;
-    while (is_ws(buffer[i]))
+
+    std::cout << "==> |" <<  buffer[i] << "|" << std::endl;
+
+    if (buffer[i] == ':')
+    {
+        while (buffer[i] == ':')
+            i++;          // : detected, skip all of them
+    }
+    else
+    {
+        res.second = "";   // NO : detected ignoring everything after chanel name. 
+        return res;
+    }
+    while (is_ws(buffer[i]) && !is_end(buffer, &i))
         i++;
     if (is_end(buffer, &i))
     {
-        res.second = ":";
+        res.second = ":";               // : added in second but no topic (delete topic)
         return res;
     }
-    else{
-        pos = i;
-        while (!is_end(buffer, &i))
-            i++;
-        std::string topic = buffer.substr(pos, i - pos);
-        res.second = topic;
+    else
+    {                                   // : and more (everything after is topic)
+            pos = i;
+            while (!is_end(buffer, &i))
+                i++;
+            std::string topic = buffer.substr(pos, i - pos);
+            res.second = topic;
         
     }
     return res;

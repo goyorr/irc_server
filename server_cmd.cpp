@@ -146,7 +146,7 @@ void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_soc
 //add send() topic when connected
 //add if only user in channel quit delete channel.
 void    server_c::join(const std::string &buffer, const uint32_t &client_socket) {
-    std::vector<std::pair<std::string, std::string> >   join_pair = join_kick(buffer, 0);
+    std::vector<std::pair<std::string, std::string> >   join_pair = join_kick_inv(buffer, 0);
     std::string                                         message;
 
     //check if channel starts with #

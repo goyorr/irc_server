@@ -18,6 +18,7 @@ class channels_c {
 
             std::vector<uint32_t>       _operators;
             std::vector<uint32_t>       _members;
+            std::vector<uint32_t>       _invited;
 
             std::string getName();
             std::string getChannelPassword();
