@@ -166,6 +166,8 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
     std::vector<std::pair<std::string, std::string> > kick_Vpair = join_kick_inv(buffer, 1);
 
     channels_c ch;
+
+    std::string err_msg;
     std::string channel;
     std::string user;
     if (kick_Vpair[0].second == "")
@@ -197,22 +199,46 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                         {
                             if(search_user(channels_map, it->first, 'm', channel))
                             {
-                                ;// ch._members.erase(it);      ERASE user
+                                ch._members.erase(std::remove(ch._members.begin(), ch._members.end(), it->first), ch._members.end());      //ERASE user
                             }
                             else
                             {
-                                ; // user not on chanel;
+                                                                          //"<client> <nick> <channel> :They aren't on that channel"
+                                err_msg = "441 " + clients_map[client_socket].getClient_nick() + " " + user + " " + channel + " :They aren't on that channel\n";
+                                if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                                    std::cerr << "Error: send." << std::endl;
                             }
                         }
                         else {
-                        std::string err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not channel operator\n";
+                        err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not channel operator\n";
                         if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                             std::cerr << "Error: send." << std::endl;
                         }
                     }
                 }
-            
+                else
+                {
+                    err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not channel operator\n";
+                    if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                        std::cerr << "Error: send." << std::endl;
+                }
             }
+            else
+            {
+                err_msg = "442 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not on that channel\n";
+                if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
+            }
+        }
+        else
+        {
+                err_msg = "403 " + clients_map[client_socket].getClient_nick() + " " + channel + " :No such channel \n";
+                if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
+        }
+    }
+}
+
 
     //             // Check if the user is an operator
     //             std::vector<uint32_t> &operators = channel._operators; // Reference to the operators list of the channel
@@ -224,9 +250,6 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
     //             // members.erase(it);
     //         }
     //     }
-    }
-    }
-}
 
 void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_socket) {
     
@@ -254,9 +277,13 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
                                 {
                                     ch._invited.push_back(it->first);
                                 }
-                                // otherwise do nothing...
-                                // else
-                                    // std::cerr << "user already on the invited list" << std::endl;
+                                else
+                                {                               //   "<client> <nick> <channel> :is already on channel" 443
+                                    err_msg = "443 " + clients_map[client_socket].getClient_nick() + " " + user + " " + chanel + " :is already on channel\n";
+                                    if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                                        std::cerr << "Error: send." << std::endl;
+
+                                }
                             }
 
                         }
