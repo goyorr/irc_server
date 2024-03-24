@@ -49,11 +49,31 @@ std::vector<std::pair<std::string, std::string> > join_kick_inv(std::string buff
     std::string mps;
     if (!no_pss)
     {
-        while (args[i] && !is_ws(args[i] && !is_end(args, &i)))
+        while (args[i] && !is_ws(args[i]) && !is_end(args, &i))
             i++;
-        mps = args.substr(pos, (i + 1) - pos );
+        mps = args.substr(pos, i - pos);
     }
-
+    std::string com;
+    if (jk == 1)
+    {
+        // std::cout << "buf: |" << buffer[i] << "|" << std::endl;
+        // std::cout << "args: |" << args << "|" << std::endl;
+        // std::cout << "x: |" << (int)args[i] << "|" << std::endl;
+        if (!no_pss)
+        {
+            while(is_ws(args[i]))
+                i++;
+            if (is_end(args, &i))
+                com = "For no apparent reason...";
+            else {
+                pos = i;
+                while (args[i] && !is_end(args, &i))
+                    i++;
+                com = args.substr(pos, (i + 1) - pos);
+                std::cout << "com: |" << com << "|" << std::endl;
+            }
+        }
+    }
 
     std::vector<std::string> chans;
     i = 0;
@@ -123,32 +143,35 @@ std::vector<std::pair<std::string, std::string> > join_kick_inv(std::string buff
             chan_usr.push_back(std::make_pair(chanels, ""));
             return chan_usr;
         }
-        std::vector<std::string> users = pass;
+        // std::vector<std::string> users = pass;
 
-        std::vector<std::string>::iterator it_users = users.begin();
-        std::vector<std::string>::iterator max = it_users;
-        for (std::vector<std::string>::iterator it_chans = chans.begin(); it_chans != chans.end(); ++it_chans)
-        {
-            puts("3");
-            while(it_users != users.end())
-            {
-                chan_usr.push_back(std::make_pair(*it_chans, *it_users));
-                it_users++;
-                it_chans++;
-                if (it_users != users.end())
-                    max++;
-            }
-            if (it_users == users.end())
-            {
-                while (it_chans != chans.end())
-                {
-                    chan_usr.push_back(std::make_pair(*it_chans, *max));
-                    it_chans++;
-                }
-            }
+        chan_usr.push_back(std::make_pair(chanels, mps));
+        chan_usr.push_back(std::make_pair(com, ""));
 
-            break;
-        }
+        // std::vector<std::string>::iterator it_users = users.begin();
+        // std::vector<std::string>::iterator max = it_users;
+        // for (std::vector<std::string>::iterator it_chans = chans.begin(); it_chans != chans.end(); ++it_chans)
+        // {
+        //     puts("3");
+        //     while(it_users != users.end())
+        //     {
+        //         chan_usr.push_back(std::make_pair(*it_chans, *it_users));
+        //         it_users++;
+        //         it_chans++;
+        //         if (it_users != users.end())
+        //             max++;
+        //     }
+        //     if (it_users == users.end())
+        //     {
+        //         while (it_chans != chans.end())
+        //         {
+        //             chan_usr.push_back(std::make_pair(*it_chans, *max));
+        //             it_chans++;
+        //         }
+        //     }
+
+        //     break;
+        // }
 
         return (chan_usr);
     }
