@@ -280,7 +280,7 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
                                     std::string rpl_msg = "341 " + clients_map[client_socket].getClient_nick() + " " + user + " " + chanel + "\n";
                                     if (send(client_socket, rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
                                         std::cerr << "Error: send." << std::endl;
-                                    channels_map[chanel]._invited.insert(it->first);
+                                    channels_map[chanel]._invited.push_back(it->first);
                                 }
                                 else
                                 {                               

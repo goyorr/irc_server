@@ -76,8 +76,10 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
                 reg_pass(buffer, client_socket);
         }
         if (clients_map[client_socket].getAuth() && clients_map[client_socket].getRegNick() && clients_map[client_socket].getRegUser()) {
-            std::cout << clients_map[client_socket].getClient_nick()  << " authenticated successfully." << std::endl;
+            // std::cout << clients_map[client_socket].getClient_nick()  << " authenticated successfully." << std::endl;
             std::string message = "001 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network\n";
+            std::cout << "messae: " << message << std::endl;
+            std::cout << "sock: " << client_socket << std::endl;
             if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
                 std::cerr << "Error: send." << std::endl;
                 exit (1);
@@ -143,13 +145,10 @@ void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_soc
     }
 }
 
-//add send() topic when connected
-//add if only user in channel quit delete channel.
 void    server_c::join(const std::string &buffer, const uint32_t &client_socket) {
     std::vector<std::pair<std::string, std::string> >   join_pair = join_kick_inv(buffer, 0);
     std::string                                         message;
 
-    //check if channel starts with #
     for (size_t i = 0; i < join_pair.size(); i++) {
         if (join_pair[i].first[0] != '#') {
             std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + " :No such channel\n";
@@ -179,7 +178,7 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
         else {
             if (search_user(channels_map, client_socket, 'm', join_pair[i].first))
                 ;
-            else if (channels_map[join_pair[i].first].getisinvite_only()) {
+            else if (channels_map[join_pair[i].first].getisinvite_only() && !search_user(channels_map, client_socket, 'i', join_pair[i].first)) {
                 message = "473 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel (+i)\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
@@ -194,34 +193,39 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
-            else {
-                channels_map[join_pair[i].first]._members.push_back(client_socket);
-                message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + join_pair[i].first + "\n";
-                for (size_t j = 0; j < channels_map[join_pair[i].first]._members.size(); j++) {
-                    if (send(channels_map[join_pair[i].first]._members[j], message.c_str(), message.size(), 0) == -1)
-                        std::cerr << "Error: send." << std::endl;
-                }
-                channels_map[join_pair[i].first].incrementUser_count();
-                std::string users;
-                for (size_t j = 0; j < channels_map[join_pair[i].first]._members.size(); j++) {
-                    if (std::find(channels_map[join_pair[i].first]._operators.begin(), channels_map[join_pair[i].first]._operators.end(),
-                        channels_map[join_pair[i].first]._members[j]) != channels_map[join_pair[i].first]._operators.end())
-                        users += "@" + clients_map[channels_map[join_pair[i].first]._members[j]].getClient_nick() + " ";
-                    else
-                        users += clients_map[channels_map[join_pair[i].first]._members[j]].getClient_nick() + " ";
-                }
-                message = "353 " + clients_map[client_socket].getClient_nick() + " = " + join_pair[i].first + " :" + users + "\n";
-                if (send(client_socket, message.c_str(), message.size(), 0) == -1)
-                    std::cerr << "Error: send." << std::endl;
-                if (channels_map[join_pair[i].first].getisrestricted_topic()) {
-                    message = "332 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + " :" + channels_map[join_pair[i].first].getTopic() + "\n";
-                    if (send(client_socket, message.c_str(), message.size(), 0) == -1)
-                        std::cerr << "Error: send." << std::endl;
-                }
-                message = "366 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + " :End of /NAMES list\n";
-                if (send(client_socket, message.c_str(), message.size(), 0) == -1)
-                    std::cerr << "Error: send." << std::endl;
-            }
+            else
+                join_channel(join_pair[i].first, client_socket);
         }
     }
+}
+
+void    server_c::join_channel(const std::string &channel_name, const uint32_t &client_socket) {
+    std::string message;
+
+    channels_map[channel_name]._members.push_back(client_socket);
+    message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + channel_name + "\n";
+    for (size_t j = 0; j < channels_map[channel_name]._members.size(); j++) {
+        if (send(channels_map[channel_name]._members[j], message.c_str(), message.size(), 0) == -1)
+            std::cerr << "Error: send." << std::endl;
+    }
+    channels_map[channel_name].incrementUser_count();
+    std::string users;
+    for (size_t j = 0; j < channels_map[channel_name]._members.size(); j++) {
+        if (std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(),
+            channels_map[channel_name]._members[j]) != channels_map[channel_name]._operators.end())
+            users += "@" + clients_map[channels_map[channel_name]._members[j]].getClient_nick() + " ";
+        else
+            users += clients_map[channels_map[channel_name]._members[j]].getClient_nick() + " ";
+    }
+    message = "353 " + clients_map[client_socket].getClient_nick() + " = " + channel_name + " :" + users + "\n";
+    if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+        std::cerr << "Error: send." << std::endl;
+    if (channels_map[channel_name].getisrestricted_topic()) {
+        message = "332 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :" + channels_map[channel_name].getTopic() + "\n";
+        if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+            std::cerr << "Error: send." << std::endl;
+    }
+    message = "366 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :End of /NAMES list\n";
+    if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+        std::cerr << "Error: send." << std::endl;
 }

@@ -33,6 +33,7 @@ class server_c {
 
                 void                priv_msg(const std::string &buffer, const uint32_t &client_socket);
                 void                join(const std::string &buffer, const uint32_t &client_socket);
+                void                join_channel(const std::string &channel_name, const uint32_t &client_socket);
 
                 static void         signalHandler(int signal);
 

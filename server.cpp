@@ -94,22 +94,41 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                     client_c::_disc.back().events = POLLIN;
                     client_c::_disc.back().revents = 0;
 
-                    std::cout << "New socket #" << tmp_client_socket << std::endl;
+                    // std::cout << "New socket #" << tmp_client_socket << std::endl;
                 }
                 else {
                     try {
                         char    buffer[1024];
-                        bytes = recv(client_c::_disc[i].fd, buffer, 1024, 0);
+                        bytes = recv(client_c::_disc[i].fd, buffer, 512, 0);
+                        std::cout << "first: "  << client_c::_disc[i].fd << "\n";
+                        usleep(800);
                         // bytes = recv(client_c::_disc[i].fd, client_c::_buffer[i], 1024, 0);
                         if (bytes == -1)
                             return std::cerr << "Error: recv." << std::endl, (void)NULL;
                         if (bytes >= 1) {
                             buffer[bytes] = '\0';
+                            std::string betterbuffer = buffer;
+                            int i1 = 0;
+                        while (true) {
+                        
+                            size_t j = betterbuffer.find('\n', i1); 
+                            if (j == std::string::npos) 
+                                break;
+
+                            std::string newbuffer = betterbuffer.substr(i1, j - i1 - 1);
+                            i1 = j + 1; 
+                            newbuffer += '\0';
+                            std::cout << newbuffer << ".\n";
+                            std::cout << "char: " <<client_c::_disc[i].fd << "\n";
+                            server_c::pars_cmd(newbuffer , client_c::_disc[i].fd);
+                        }
+
+
                             //make a new buffer for every socket.
                             // if (client_c::_buffer[i][bytes] == '\n');
                             //     server_c::pars_cmd(client_c::_buffer[i], client_c::_disc[i].fd);
-                            std::cout << buffer;
-                            server_c::pars_cmd(buffer, client_c::_disc[i].fd);
+                            // std::cout << static_cast<int>(buffer[bytes - 1]) << ".\n";
+                            // std::cout << static_cast<int>(buffer[bytes - 2]) << ".\n";
                         }
                         else if (bytes == 0) {
                             if (close(client_c::_disc[i].fd) == -1)
@@ -118,10 +137,9 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                             clients_map.erase(client_c::_disc[i].fd);
                             client_c::_disc.erase(client_c::_disc.begin() + i);
                         }
-                        std::cout << std::flush;
+                        // std::cout << std::flush;
                     }
                     catch (...) {}
-
                 }
             }
         }

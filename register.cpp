@@ -3,7 +3,6 @@
 void    server_c::reg_user(const std::string &buffer, const uint32_t &client_socket) {
     std::pair<uint32_t, std::string> userpair = regi_parse(buffer, 2);
 
-
     if (!userpair.first) {
         if (clients_map.find(client_socket) == clients_map.end()) {
             client_c cln;
