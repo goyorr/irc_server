@@ -1,5 +1,4 @@
 import socket
-import time
 
 clients = []
 
@@ -14,17 +13,8 @@ def connect_to_server(host, port, i):
         print(f"Connected to {host} on port {port}")
         
         # Send data to the server
-        message = f"PASS ok\r\n"
+        message = f"PASS ok\nUSER x{i} 0 * x\nNICK user{i}\nJOIN #chh pass\n"
         client_socket.sendall(message.encode())
-        # time.sleep(0.0001)
-        message = f"NICK user{i}\r\n"
-        # time.sleep(0.0001)
-        client_socket.sendall(message.encode())
-        # time.sleep(0.0001)
-        message = f"USER x{i} 0 * x\r\n"
-        client_socket.sendall(message.encode())
-        # message = f"JOIN #ch{i}\n"
-        # client_socket.sendall(message.encode())
         print("Message sent to server:", message)
         
         # Receive data from the server

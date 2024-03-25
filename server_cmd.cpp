@@ -76,10 +76,8 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
                 reg_pass(buffer, client_socket);
         }
         if (clients_map[client_socket].getAuth() && clients_map[client_socket].getRegNick() && clients_map[client_socket].getRegUser()) {
-            // std::cout << clients_map[client_socket].getClient_nick()  << " authenticated successfully." << std::endl;
+            std::cout << clients_map[client_socket].getClient_nick()  << " authenticated successfully." << std::endl;
             std::string message = "001 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network\n";
-            std::cout << "messae: " << message << std::endl;
-            std::cout << "sock: " << client_socket << std::endl;
             if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
                 std::cerr << "Error: send." << std::endl;
                 exit (1);

@@ -220,10 +220,8 @@ std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::str
     // if (is_end(buffer, &pos))
     std::string mods = buffer.substr(i, pos - i);
     res.second.first = mods;
-        // std::cout << "here: |" << mods << "|" << std::endl;
-    size_t err = mods.find_first_not_of("itkol+-");
+    size_t err = mods.find_first_not_of("tikol+-");
     if (err != std::string::npos) {
-        // puts ("XXX");
         res.second.first = "X";
         return res;         // unknown mod;
     }
@@ -298,8 +296,6 @@ std::pair<std::string, std:: string> topic_parse(std::string buffer) {
         res.second = "";      // no second arg
         return res;
     }
-
-    std::cout << "==> |" <<  buffer[i] << "|" << std::endl;
 
     if (buffer[i] == ':')
     {
