@@ -1,6 +1,91 @@
 
 #include "headers/includes.h"
 
+std::pair<std::vector<std::string>, std::vector<std::string> > join_pars(std::string buffer) {
+
+    std::pair<std::vector<std::string>, std::vector<std::string> > join_pair;
+    int i = 0;
+    while (is_ws(buffer[i]))
+        i++;
+    while (!is_ws(buffer[i]))
+        i++;
+    while (is_ws(buffer[i]))
+        i++;
+    if (is_end(buffer, &i))
+    {
+        join_pair.first.push_back("");  // not enough args ERR;
+        return join_pair;
+    }
+
+    int pos = buffer.size();
+    while(is_end(buffer, &pos))
+        pos--;
+    while (is_ws(buffer[pos]))
+        pos--;
+    std::string args = buffer.substr(i, pos - i + 1);  
+    i = 0;
+    pos = i;
+    while (!is_ws(args[i]))
+        i++;
+    std::string chanels = args.substr(pos, i - pos);  
+    while(is_ws(args[i]))
+        i++;
+    int no_pss = 0;
+    if (is_end(args, &i))
+        no_pss = 1;
+    pos = i;
+    std::string mps;
+    if (!no_pss)
+    {
+        while (args[i] && !is_ws(args[i]) && !is_end(args, &i))
+            i++;
+        mps = args.substr(pos, i - pos);
+    }
+    std::vector<std::string> chans;
+    i = 0;
+    size_t cpos;
+    while (!is_end(chanels, &i))
+    {
+        cpos = chanels.find(',', i);
+        if (cpos == std::string::npos)
+        {   
+            chans.push_back(chanels.substr(i, chanels.size() - i));
+            break;
+        }
+        chans.push_back(chanels.substr(i, cpos - i));
+        i = cpos + 1;
+    }
+
+    std::vector<std::string> pass;
+
+    if (!no_pss)
+    {
+        i = 0;
+        while (!is_end(mps, &i))
+        {
+            cpos = mps.find(',', i);
+            if (cpos == std::string::npos)
+            {
+                pass.push_back(mps.substr(i, mps.size() - i));
+                break;
+            }
+            pass.push_back(mps.substr(i, cpos - i));
+            i = cpos + 1;
+        }
+    }
+    else
+        pass.push_back("");
+    join_pair.first = chans;
+    join_pair.second = pass;
+    return join_pair;
+}
+
+
+
+
+
+
+
 std::vector<std::pair<std::string, std::string> > join_kick_inv(std::string buffer, int jk){
 
     std::vector<std::pair<std::string, std::string> > jki_generic;

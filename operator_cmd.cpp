@@ -253,11 +253,11 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
             chanel = invitations[j].second;
             if (channels_map.find(invitations[j].second) != channels_map.end()) 
             {
-                if (search_user(channels_map, client_socket, 'm', chanel))        
+                if (search_user(channels_map, client_socket, 'm', chanel))
                 {
-                    if (search_user(channels_map, client_socket, 'o', chanel))       
+                    if (search_user(channels_map, client_socket, 'o', chanel))
                     {
-                        for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); it++){
+                        for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); it++) {
                             if (clients_map[it->first].getClient_nick() == user)
                             {
                                 if (!search_user(channels_map, it->first, 'm', chanel))  
@@ -272,9 +272,12 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
                                     err_msg = "443 " + clients_map[client_socket].getClient_nick() + " " + user + " " + chanel + " :is already on channel\n";
                                     if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                                         std::cerr << "Error: send." << std::endl;
-
                                 }
+                                return ; 
                             }
+                            err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
+                            if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                                std::cerr << "Error: send." << std::endl;
 
                         }
                     }

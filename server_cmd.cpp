@@ -144,55 +144,59 @@ void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_soc
 }
 
 void    server_c::join(const std::string &buffer, const uint32_t &client_socket) {
-    std::vector<std::pair<std::string, std::string> >   join_pair = join_kick_inv(buffer, 0);
+    std::pair<std::vector<std::string>, std::vector<std::string> >   join_pair = join_pars(buffer);
     std::string                                         message;
+    size_t k = 0;
 
-    for (size_t i = 0; i < join_pair.size(); i++) {
-        if (join_pair[i].first[0] != '#') {
-            std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + " :No such channel\n";
+    for (size_t i = 0; i < join_pair.first.size(); i++) {
+        if (k >= join_pair.second.size())
+            k = join_pair.second.size();
+        if (join_pair.first[i][0] != '#') {
+            std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :No such channel\n";
             if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
             continue ;
         }
-        if (join_pair[i].first[join_pair[i].first.size() - 1] == 13)
-            join_pair[i].first = join_pair[i].first.substr(0, join_pair[i].first.size() - 1);
-        if (channels_map.find(join_pair[i].first) == channels_map.end()) {
+        if (join_pair.first[i][join_pair.first[i].size() - 1] == 13)
+            join_pair.first[i] = join_pair.first[i].substr(0, join_pair.first[i].size() - 1);
+        if (channels_map.find(join_pair.first[i]) == channels_map.end()) {
             channels_c newChnl;
 
-            channels_map[join_pair[i].first] = newChnl;
-            channels_map[join_pair[i].first].setName(join_pair[i].first);
-            channels_map[join_pair[i].first]._members.push_back(client_socket);
-            channels_map[join_pair[i].first]._operators.push_back(client_socket);
-            message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + join_pair[i].first + "\n";
+            channels_map[join_pair.first[i]] = newChnl;
+            channels_map[join_pair.first[i]].setName(join_pair.first[i]);
+            channels_map[join_pair.first[i]]._members.push_back(client_socket);
+            channels_map[join_pair.first[i]]._operators.push_back(client_socket);
+            message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + join_pair.first[i] + "\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
-            message = "353 " + clients_map[client_socket].getClient_nick() + " = " + join_pair[i].first + " :@" +clients_map[client_socket].getClient_nick() + "\n";
+            message = "353 " + clients_map[client_socket].getClient_nick() + " = " + join_pair.first[i] + " :@" +clients_map[client_socket].getClient_nick() + "\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
-            message = "366 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + " :End of /NAMES list\n";
+            message = "366 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :End of /NAMES list\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
         }
         else {
-            if (search_user(channels_map, client_socket, 'm', join_pair[i].first))
+            if (search_user(channels_map, client_socket, 'm', join_pair.first[i]))
                 ;
-            else if (channels_map[join_pair[i].first].getisinvite_only() && !search_user(channels_map, client_socket, 'i', join_pair[i].first)) {
-                message = "473 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel (+i)\n";
+            else if (channels_map[join_pair.first[i]].getisinvite_only() && !search_user(channels_map, client_socket, 'i', join_pair.first[i])) {
+                message = "473 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + ":Cannot join channel (+i)\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
-            else if (channels_map[join_pair[i].first].getisuser_limit() && channels_map[join_pair[i].first].getuser_limit() == channels_map[join_pair[i].first].getuser_count()) {
-                message = "471 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel (+l)\n";
+            else if (channels_map[join_pair.first[i]].getisuser_limit() && channels_map[join_pair.first[i]].getuser_limit() == channels_map[join_pair.first[i]].getuser_count()) {
+                message = "471 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + ":Cannot join channel (+l)\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
-            else if (channels_map[join_pair[i].first].getisProtected() && join_pair[i].second != channels_map[join_pair[i].first].getChannelPassword()) {
-                message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair[i].first + ":Cannot join channel (+k)\n";
+            else if (channels_map[join_pair.first[i]].getisProtected() && channels_map[join_pair.first[i]].getChannelPassword() != join_pair.second[k]) {
+                k++;
+                message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + ":Cannot join channel (+k)\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
             else
-                join_channel(join_pair[i].first, client_socket);
+                join_channel(join_pair.first[i], client_socket);
         }
     }
 }
