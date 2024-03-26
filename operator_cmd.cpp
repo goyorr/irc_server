@@ -34,10 +34,10 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
     }
 
     size_t s = 0;
+    std::string err = "lol";
     for (size_t i = 0; i < modes.size(); i += 2)
     {
-        //fix: subs strings has 2 extra characters.
-        mode = (int)modes[i+1];
+        mode = static_cast<int>(modes[i+1]);
         switch(mode) {
             case(105):
                 mode_i(channel_name, client_socket, modes[i] == '+' ? true : false);
@@ -54,6 +54,16 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
             case(108):
                 mode_l(channel_name, client_socket, modes[i] == '+' ? true : false, subs.size() < s ? subs[s] : ""); s++;
                 break;
+            case(48):
+                    err = "501 " + clients_map[client_socket].getClient_nick() + " :Unknown MODE flag\n";
+                if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
+                return ;
+            default:
+                    err = "461 " + clients_map[client_socket].getClient_nick() + " MODE :Not enough parameters\n";
+                if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
+                return ;
         }
     }
 }
@@ -330,17 +340,17 @@ void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_so
             }
             std::string message;
             if (topic == ":") {
-                message =  clients_map[client_socket].getClient_nick() + " " + channel_name
-                + " TOPIC :" + clients_map[client_socket].getClient_nick() + " has cleared the channel's topic\n";
-                channels_map[channel_name].setTopic(NULL), void(NULL);
+                message = ":" + clients_map[client_socket].getClient_nick() + " TOPIC " + channel_name + " :\n";
+                channels_map[channel_name].setTopic("");
             }
             else {
-                message =  clients_map[client_socket].getClient_nick() + " " + channel_name
-                + " TOPIC :" + clients_map[client_socket].getClient_nick() + " has set new topic to " + topic + "\n";
-                channels_map[channel_name].setTopic(topic), void(NULL);
+                message = ":" + clients_map[client_socket].getClient_nick() + " TOPIC " + channel_name + " :" + topic + "\n";
+                channels_map[channel_name].setTopic(topic);
             }
-            if (send(client_socket, message.c_str(), message.size(), 0) == -1)
-                std::cerr << "Error: send." << std::endl;
+            for (size_t ii = 0; ii < channels_map[channel_name]._members.size(); ii++) {
+                if (send(channels_map[channel_name]._members[ii], message.c_str(), message.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
+            }
         }
     }
     else {

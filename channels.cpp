@@ -5,6 +5,7 @@ channels_c::channels_c() {
     _isinvite_only = false;
     _isrestricted_topic = false;
     _isuser_limit = false;
+    _channel_topic = "";
 }
 
 channels_c::~channels_c() {

@@ -201,12 +201,18 @@ void    server_c::join_channel(const std::string &channel_name, const uint32_t &
     std::string message;
 
     channels_map[channel_name]._members.push_back(client_socket);
+    channels_map[channel_name].incrementUser_count();
     message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + channel_name + "\n";
     for (size_t j = 0; j < channels_map[channel_name]._members.size(); j++) {
         if (send(channels_map[channel_name]._members[j], message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }
-    channels_map[channel_name].incrementUser_count();
+    if (channels_map[channel_name].getTopic() == "")
+        message = "331 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No topic is set\n";
+    else
+        message = "332 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :" + channels_map[channel_name].getTopic() + "\n";
+    if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+        std::cerr << "Error: send." << std::endl;
     std::string users;
     for (size_t j = 0; j < channels_map[channel_name]._members.size(); j++) {
         if (std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(),
@@ -218,11 +224,6 @@ void    server_c::join_channel(const std::string &channel_name, const uint32_t &
     message = "353 " + clients_map[client_socket].getClient_nick() + " = " + channel_name + " :" + users + "\n";
     if (send(client_socket, message.c_str(), message.size(), 0) == -1)
         std::cerr << "Error: send." << std::endl;
-    if (channels_map[channel_name].getisrestricted_topic()) {
-        message = "332 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :" + channels_map[channel_name].getTopic() + "\n";
-        if (send(client_socket, message.c_str(), message.size(), 0) == -1)
-            std::cerr << "Error: send." << std::endl;
-    }
     message = "366 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :End of /NAMES list\n";
     if (send(client_socket, message.c_str(), message.size(), 0) == -1)
         std::cerr << "Error: send." << std::endl;

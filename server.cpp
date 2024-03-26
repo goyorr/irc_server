@@ -114,6 +114,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                                 std::string newbuffer = betterbuffer.substr(i1, j - i1 + 1);
                                 i1 = j + 1; 
                                 newbuffer += '\0';
+                                std::cout << newbuffer;
                                 server_c::pars_cmd(newbuffer , client_c::_disc[i].fd);
                             }
                         }

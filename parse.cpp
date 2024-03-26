@@ -202,7 +202,7 @@ std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::str
     while (!is_ws(buffer[pos]))
         pos++;
     if (is_end(buffer, &pos)) {
-        res.first = "401";    // not enough param
+        res.second.first = "xx";    // not enough param
         return res;
     }
     std::string chanel = buffer.substr(i, pos - i);
@@ -211,7 +211,7 @@ std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::str
     while(is_ws(buffer[pos]))
         pos++;
     if (is_end(buffer, &i)) {
-        res.first = "401";    // not enough param
+        res.second.first = "xx";    // not enough param
         return res;
     }
     i = pos;
@@ -222,7 +222,7 @@ std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::str
     res.second.first = mods;
     size_t err = mods.find_first_not_of("tikol+-");
     if (err != std::string::npos) {
-        res.second.first = "X";
+        res.second.first = "00";
         return res;         // unknown mod;
     }
     else {
@@ -233,7 +233,7 @@ std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::str
             nj = j+2;
             mo = mods.substr(j, nj - j);
             if ((mo[0] != '-' && mo[0] != '+') || (mo[1] != 'i' && mo[1] != 't' && mo[1] != 'k' && mo[1] != 'o' && mo[1] != 'l')) {
-                res.first = "400";
+                res.second.first = "00";
                 return res;    // unknown mod, wrong syntax;
             }
             j = nj;
