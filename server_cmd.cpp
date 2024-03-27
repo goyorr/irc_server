@@ -52,8 +52,10 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
             std::cout << "#" << client_socket << " disconnected" << std::endl;
             clients_map.erase(client_socket);
             for (size_t i = 0; i < client_c::_disc.size(); i++) {
-                if (client_c::_disc[i].fd == static_cast<int>(client_socket))
+                if (client_c::_disc[i].fd == static_cast<int>(client_socket)) {
+                    buffers_map.erase(client_c::_disc[i].fd);
                     client_c::_disc.erase(client_c::_disc.begin() + i);
+                }
             }
             if (close(client_socket) == -1)
                 std::cerr << "Error: close.";

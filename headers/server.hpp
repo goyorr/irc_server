@@ -10,6 +10,8 @@ class server_c {
                 server_c();
                 ~server_c();
 
+                std::map<int, std::string>          buffers_map;
+
                 std::map<uint32_t,    client_c>     clients_map;
                 std::map<std::string, channels_c>   channels_map;
 

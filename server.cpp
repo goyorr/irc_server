@@ -98,24 +98,31 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                 }
                 else {
                     try {
-                        char    buffer[1024];
-                        bytes = recv(client_c::_disc[i].fd, buffer, 512, 0);
+                        char po[1024];
+                        bytes = recv(client_c::_disc[i].fd, po, 512, 0);
                         if (bytes == -1)
                             return std::cerr << "Error: recv." << std::endl, (void)NULL;
                         if (bytes >= 1) {
-                            buffer[bytes] = '\0';
-                            std::string betterbuffer = buffer;
-                            int i1 = 0;
-                            while (true) {
-                                size_t j = betterbuffer.find('\n', i1); 
-                                if (j == std::string::npos) 
-                                    break;
-
-                                std::string newbuffer = betterbuffer.substr(i1, j - i1 + 1);
-                                i1 = j + 1; 
-                                newbuffer += '\0';
-                                std::cout << newbuffer;
-                                server_c::pars_cmd(newbuffer , client_c::_disc[i].fd);
+                            po[bytes] = '\0';
+                            if (po[bytes - 1] == 10) {
+                                std::string betterbuffer = buffers_map[client_c::_disc[i].fd] + po;
+                                buffers_map[client_c::_disc[i].fd].clear();
+                                int i1 = 0;
+                                while (true) {
+                                    size_t j = betterbuffer.find('\n', i1); 
+                                    if (j == std::string::npos) 
+                                        break;
+                                    std::string newbuffer = betterbuffer.substr(i1, j - i1 + 1);
+                                    i1 = j + 1; 
+                                    newbuffer += '\0';
+                                    server_c::pars_cmd(newbuffer , client_c::_disc[i].fd);
+                                }
+                            }
+                            else {
+                                if (buffers_map[client_c::_disc[i].fd].empty())
+                                    buffers_map[client_c::_disc[i].fd] = po;
+                                else
+                                    buffers_map[client_c::_disc[i].fd] += po;
                             }
                         }
                         else if (bytes == 0) {
@@ -123,6 +130,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                                 std::cerr << "Error: close." << std::endl;
                             std::cout << "#" << client_c::_disc[i].fd << " disconnected" << std::endl;
                             clients_map.erase(client_c::_disc[i].fd);
+                            buffers_map.erase(client_c::_disc[i].fd);
                             client_c::_disc.erase(client_c::_disc.begin() + i);
                         }
                     }
