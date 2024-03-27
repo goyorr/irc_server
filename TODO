@@ -1,3 +1,21 @@
-in USER doesnt have to be 0 *? + real name can have multiple words if it starts with :real name 
 
 check mode l(no feed back).
+#join with password "channel with pass allow other to enter without password" // test join 100% +k
+
+
+QUIT
+delete user's data when user is out;
+
+
+#else if the memeber who left was operator chack if no more operators then assign next member as operator
+
+
+delete channel when empty;
+delete user from all joined chanels while checking if chanel is empty 
+if all ops out chose
+
+in USER doesnt have to be 0 *? + real name can have multiple words if it starts with :real name 
+
+
+test for malik: kicked but recieve privmsg on chan;
+
