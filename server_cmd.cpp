@@ -51,10 +51,13 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
                 std::cerr << "Error: send." << std::endl;
             std::cout << "#" << client_socket << " disconnected" << std::endl;
             for (std::map<std::string, channels_c>::iterator it = channels_map.begin(); it != channels_map.end(); it++) {
+                if (search_user(channels_map, client_socket, 'o', it->first))
+                    channels_map[it->first]._operators.erase(std::find(channels_map[it->first]._operators.begin(), channels_map[it->first]._operators.end(), client_socket));
                 if (search_user(channels_map, client_socket, 'm', it->first)) {
-                    channels_map.erase(it->first);
+                    channels_map[it->first]._members.erase(std::find(channels_map[it->first]._members.begin(), channels_map[it->first]._members.end(), client_socket));
                     //check if it was the last user then delete the channel.
                 }
+                break ;
             }
             for (size_t i = 0; i < client_c::_disc.size(); i++) {
                 if (client_c::_disc[i].fd == static_cast<int>(client_socket)) {

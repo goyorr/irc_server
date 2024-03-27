@@ -132,8 +132,10 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                             std::cout << "#" << client_c::_disc[i].fd << " disconnected" << std::endl;
                             //delete joined channels.
                             for (std::map<std::string, channels_c>::iterator it = channels_map.begin(); it != channels_map.end(); it++) {
+                                if (search_user(channels_map, client_c::_disc[i].fd, 'o', it->first))
+                                    channels_map[it->first]._operators.erase(std::find(channels_map[it->first]._operators.begin(), channels_map[it->first]._operators.end(), client_c::_disc[i].fd));
                                 if (search_user(channels_map, client_c::_disc[i].fd, 'm', it->first)) {
-                                    channels_map.erase(it->first);
+                                    channels_map[it->first]._members.erase(std::find(channels_map[it->first]._members.begin(), channels_map[it->first]._members.end(), client_c::_disc[i].fd));
                                     //check if it was the last user then delete the channel.
                                 }
                             }
