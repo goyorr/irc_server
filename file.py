@@ -13,7 +13,7 @@ def connect_to_server(host, port, i):
         print(f"Connected to {host} on port {port}")
         
         # Send data to the server
-        message = f"PASS ok\nUSER x{i} 0 * x\nNICK user{i}\nJOIN #chh\n"
+        message = f"PASS ok\nUSER x{i} 0 * x\nNICK user{i}\nJOIN #LOL\n"
         client_socket.sendall(message.encode())
         print("Message sent to server:", message)
         

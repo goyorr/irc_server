@@ -50,13 +50,19 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
             std::cout << "#" << client_socket << " disconnected" << std::endl;
-            clients_map.erase(client_socket);
+            for (std::map<std::string, channels_c>::iterator it = channels_map.begin(); it != channels_map.end(); it++) {
+                if (search_user(channels_map, client_socket, 'm', it->first)) {
+                    channels_map.erase(it->first);
+                    //check if it was the last user then delete the channel.
+                }
+            }
             for (size_t i = 0; i < client_c::_disc.size(); i++) {
                 if (client_c::_disc[i].fd == static_cast<int>(client_socket)) {
                     buffers_map.erase(client_c::_disc[i].fd);
                     client_c::_disc.erase(client_c::_disc.begin() + i);
                 }
             }
+            clients_map.erase(client_socket);
             if (close(client_socket) == -1)
                 std::cerr << "Error: close.";
         }
@@ -182,18 +188,18 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
             if (search_user(channels_map, client_socket, 'm', join_pair.first[i]))
                 ;
             else if (channels_map[join_pair.first[i]].getisinvite_only() && !search_user(channels_map, client_socket, 'i', join_pair.first[i])) {
-                message = "473 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + ":Cannot join channel (+i)\n";
+                message = "473 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :Cannot join channel (+i)\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
             else if (channels_map[join_pair.first[i]].getisuser_limit() && channels_map[join_pair.first[i]].getuser_limit() == channels_map[join_pair.first[i]].getuser_count()) {
-                message = "471 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + ":Cannot join channel (+l)\n";
+                message = "471 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :Cannot join channel (+l)\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
             else if (channels_map[join_pair.first[i]].getisProtected() && channels_map[join_pair.first[i]].getChannelPassword() != join_pair.second[k]) {
                 k++;
-                message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + ":Cannot join channel (+k)\n";
+                message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :Cannot join channel (+k)\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }

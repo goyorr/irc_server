@@ -15,6 +15,14 @@ int is_end(std::string str, int *i)
     
 }
 
+bool is_num(std::string str) {
+    for (size_t i = 0; i < str.size(); i++) {
+        if (!isnumber(str[i]))
+            return false;
+    }
+    return true;
+}
+
 std::pair<int, std::string> user_parse(std::string usr)     // mlk 0 * realname
 {
     std::pair <int , std::string> res;

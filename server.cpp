@@ -115,6 +115,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                                     std::string newbuffer = betterbuffer.substr(i1, j - i1 + 1);
                                     i1 = j + 1; 
                                     newbuffer += '\0';
+                                    std::cout << "new: " << newbuffer;
                                     server_c::pars_cmd(newbuffer , client_c::_disc[i].fd);
                                 }
                             }
@@ -129,6 +130,13 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                             if (close(client_c::_disc[i].fd) == -1)
                                 std::cerr << "Error: close." << std::endl;
                             std::cout << "#" << client_c::_disc[i].fd << " disconnected" << std::endl;
+                            //delete joined channels.
+                            for (std::map<std::string, channels_c>::iterator it = channels_map.begin(); it != channels_map.end(); it++) {
+                                if (search_user(channels_map, client_c::_disc[i].fd, 'm', it->first)) {
+                                    channels_map.erase(it->first);
+                                    //check if it was the last user then delete the channel.
+                                }
+                            }
                             clients_map.erase(client_c::_disc[i].fd);
                             buffers_map.erase(client_c::_disc[i].fd);
                             client_c::_disc.erase(client_c::_disc.begin() + i);

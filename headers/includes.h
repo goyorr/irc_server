@@ -25,5 +25,6 @@ std::vector<std::string>                                        sort_subs(std::s
 std::string                                                     select_cmd(std::string buffer);
 int                                                             is_ws(int c);
 int                                                             is_end(std::string str, int *i);
+bool                                                            is_num(std::string str);
 
 #endif

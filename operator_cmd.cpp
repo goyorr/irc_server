@@ -52,7 +52,7 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
                 mode_o(channel_name, client_socket, subs.size() > s ? subs[s] : "", modes[i] == '+' ? true : false); s++;
                 break;
             case(108):
-                mode_l(channel_name, client_socket, modes[i] == '+' ? true : false, subs.size() < s ? subs[s] : ""); s++;
+                mode_l(channel_name, client_socket, modes[i] == '+' ? true : false, subs.size() > s ? subs[s] : ""); s++;
                 break;
             case(48):
                     err = "501 " + clients_map[client_socket].getClient_nick() + " :Unknown MODE flag\n";
@@ -160,10 +160,12 @@ void    server_c::mode_o(std::string channel_name, uint32_t client_socket, std::
 
 void    server_c::mode_l(std::string channel_name, uint32_t client_socket, bool set, std::string limit) {
     //check if limit is a possitive number.
-    if (limit.empty())
-        return ;
-    uint32_t limit_int = std::atoi(limit.c_str());
+    std::cout << "limit: " << limit << std::endl;
     if (set) {
+        if (limit.empty() || !is_num(limit))
+            return ;
+        uint32_t limit_int = std::atoi(limit.c_str());
+
         channels_map[channel_name].setuser_limit(limit_int);
         channels_map[channel_name].setisuser_limit(true);
         std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +l\n";
@@ -174,7 +176,7 @@ void    server_c::mode_l(std::string channel_name, uint32_t client_socket, bool 
         std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -l\n";
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
-        channels_map[channel_name].setisuser_limit(true);
+        channels_map[channel_name].setisuser_limit(false);
     }
 }
 
