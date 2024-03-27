@@ -16,9 +16,9 @@
 #include "server.hpp"
 
 std::pair<std::vector<std::string>, std::vector<std::string> >  join_pars(std::string buffer);
+std::vector<std::pair<std::string, std::string> >               kick_inv(std::string buffer, int ki);
 std::pair<std::string, std::pair<std::string, std::string> >    parse_mode(std::string buffer);
 std::pair<std::vector<std::string>, std::string >               prvmsg_parse(std::string buffer);
-std::vector<std::pair<std::string, std::string> >               join_kick_inv(std::string buffer, int jk);
 std::pair<std::string, std:: string>                            topic_parse(std::string buffer);
 std::pair<int, std::string>                                     regi_parse(std::string str, int flag);
 std::vector<std::string>                                        sort_subs(std::string subjects);

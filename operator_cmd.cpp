@@ -179,133 +179,146 @@ void    server_c::mode_l(std::string channel_name, uint32_t client_socket, bool 
 }
 
 void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_socket) {
-    std::vector<std::pair<std::string, std::string> > kick_Vpair = join_kick_inv(buffer, 1);
+
+    std::vector<std::pair<std::string, std::string> > kick_Vpair = kick_inv(buffer, 0);
+
     std::string err_msg;
 
-    if (kick_Vpair[0].second == "") {
-       std::string err = "461 " + clients_map[client_socket].getClient_nick() + " KICK :Not enough parameters\n" ;
-       if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+    if (kick_Vpair[0].first == "") {
+       err_msg = "461 " + clients_map[client_socket].getClient_nick() + " KICK :Not enough parameters\n" ;
+       if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return;
     }
-    // kick one at a time
-    std::string channel = kick_Vpair[0].first;
-    std::string user = kick_Vpair[0].second;
-    std::string comment = kick_Vpair[1].first;
-    if (channels_map.find(channel) != channels_map.end()) {
-        if (search_user(channels_map, client_socket, 'm', channel)) {
-            if (search_user(channels_map, client_socket, 'o', channel)) {
-                for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); it++) {
-                    if (clients_map[it->first].getClient_nick() == user) {
-                        if(search_user(channels_map, it->first, 'm', channel)) {
-                            for (size_t i = 0; i < channels_map[channel]._members.size(); i++) {
-                                if (it->first == channels_map[channel]._members[i]) {
-                                    std::string rpl_msg = ":" + clients_map[client_socket].getClient_nick() + " KICK " + channel + " " + user + " :" + comment + "\n";
-                                    if (send(client_socket, rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
-                                    std::cerr << "Error: send." << std::endl;
-                                    channels_map[channel]._members.erase(channels_map[channel]._members.begin() + i);      //ERASE user
-                                    return ;
+    
+    std::string comment = kick_Vpair[0].first;
+    std::string channel = kick_Vpair[1].first;
+    std::string user;
+
+     for (size_t j = 1; j != kick_Vpair.size(); j++)
+     {
+        user = kick_Vpair[j].second;
+        if (channels_map.find(channel) != channels_map.end()) 
+        {
+            if (search_user(channels_map, client_socket, 'm', channel)) 
+            {
+                if (search_user(channels_map, client_socket, 'o', channel))
+                {
+                    for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); it++) 
+                    {
+                        if (clients_map[it->first].getClient_nick() == user) 
+                        {
+                            if(search_user(channels_map, it->first, 'm', channel)) 
+                            {
+                                for (size_t i = 0; i < channels_map[channel]._members.size(); i++) {
+                                    if (it->first == channels_map[channel]._members[i]) 
+                                    {
+                                        std::string rpl_msg = ":" + clients_map[client_socket].getClient_nick() + " KICK " + channel + " " + user + " :" + comment + "\n";
+                                        if (send(client_socket, rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
+                                            std::cerr << "Error: send." << std::endl;
+                                        channels_map[channel]._members.erase(channels_map[channel]._members.begin() + i);      //ERASE user
+                                        continue ;
+                                    }
                                 }
                             }
-                        }
-                        else {
-                            err_msg = "441 " + clients_map[client_socket].getClient_nick() + " " + user + " " + channel + " :They aren't on that channel\n";
-                            if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
-                                std::cerr << "Error: send." << std::endl;
-                            return ;
+                            else {
+                                err_msg = "441 " + clients_map[client_socket].getClient_nick() + " " + user + " " + channel + " :They aren't on that channel\n";
+                                if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                                    std::cerr << "Error: send." << std::endl;
+                                return ;
+                            }
                         }
                     }
-                }
-                //not in server
-                err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
-                if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                    err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
+                        if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
+                }
+                else {
+                    err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not channel operator\n";
+                    if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                        std::cerr << "Error: send." << std::endl;
+                }
             }
             else {
-                err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not channel operator\n";
+                err_msg = "442 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not on that channel\n";
                 if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
         }
         else {
-            err_msg = "442 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not on that channel\n";
-            if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
-                std::cerr << "Error: send." << std::endl;
-        }
-    }
-    else {
             err_msg = "403 " + clients_map[client_socket].getClient_nick() + " " + channel + " :No such channel \n";
             if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
+        }
     }
 }
 
 void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_socket) {
     
-    std::vector<std::pair<std::string, std::string> > invitations = join_kick_inv(buffer, 3);
-
+    std::vector<std::pair<std::string, std::string> > invitations = kick_inv(buffer, 1);
     std::string err_msg;
-    std::string chanel;
-    std::string user;
-    for (size_t j = 0; j != invitations.size(); j++)
+
+    if(invitations[0].first == "")
     {
-            user = invitations[j].first;
-            chanel = invitations[j].second;
-            if (channels_map.find(invitations[j].second) != channels_map.end()) 
+        err_msg = "461 " + clients_map[client_socket].getClient_nick() + " INVITE :Not enough parameters\n" ;
+        if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+            std::cerr << "Error: send." << std::endl;
+        return ;
+    }
+
+    std::string user = invitations[0].first;
+    std::string chanel = invitations[0].second;
+    if (channels_map.find(invitations[0].second) != channels_map.end()) 
+    {
+        if (search_user(channels_map, client_socket, 'm', chanel))
+        {
+            if (search_user(channels_map, client_socket, 'o', chanel))
             {
-                if (search_user(channels_map, client_socket, 'm', chanel))
+                for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); it++)
                 {
-                    if (search_user(channels_map, client_socket, 'o', chanel))
+                    if (clients_map[it->first].getClient_nick() == user)
                     {
-                        for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); it++) {
-                            if (clients_map[it->first].getClient_nick() == user)
-                            {
-                                if (!search_user(channels_map, it->first, 'm', chanel))  
-                                {
-                                    std::string rpl_msg = "341 " + clients_map[client_socket].getClient_nick() + " " + user + " " + chanel + "\n";
-                                    channels_map[chanel]._invited.push_back(it->first);
-                                    if (send(client_socket, rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
-                                        std::cerr << "Error: send." << std::endl;
-                                }
-                                else
-                                {                               
-                                    err_msg = "443 " + clients_map[client_socket].getClient_nick() + " " + user + " " + chanel + " :is already on channel\n";
-                                    if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
-                                        std::cerr << "Error: send." << std::endl;
-                                }
-                                return ; 
-                            }
-                            err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
+                        if (!search_user(channels_map, it->first, 'm', chanel))  
+                        {
+                            std::string rpl_msg = "341 " + clients_map[client_socket].getClient_nick() + " " + user + " " + chanel + "\n";
+                            if (send(client_socket, rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
+                                std::cerr << "Error: send." << std::endl;
+                            channels_map[chanel]._invited.push_back(it->first);
+                            return ;
+                        }
+                        else
+                        {                               
+                            err_msg = "443 " + clients_map[client_socket].getClient_nick() + " " + chanel + " " + user + " :is already on channel\n";
                             if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                                 std::cerr << "Error: send." << std::endl;
-
+                                return ; 
                         }
                     }
-                    else
-                    {
-                        err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :You're not channel operator\n";
-                        if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
-                            std::cerr << "Error: send." << std::endl;
-                    }
-                }
-                else 
-                {
-                        err_msg = "442 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :You're not on that channel\n";
-                        if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
-                            std::cerr << "Error: send." << std::endl;
+                    err_msg = "40111 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
+                    if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                        std::cerr << "Error: send." << std::endl;
                 }
             }
             else
             {
-                err_msg = "403 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :No such channel \n";  //  "<client> <channel> :No such channel"  403
+                err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :You're not channel operator\n";
                 if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
+        }
+        else 
+        {
+                err_msg = "442 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :You're not on that channel\n";
+                if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
+        }
     }
-
-
-
-    (void)client_socket;
+    else
+    {
+        err_msg = "403 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :No such channel \n";  //  "<client> <channel> :No such channel"  403
+        if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+            std::cerr << "Error: send." << std::endl;
+    }
 }
 
 void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_socket) {
