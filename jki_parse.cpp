@@ -133,15 +133,10 @@ std::vector<std::pair<std::string, std::string> > kick_inv(std::string buffer, i
 
     while(is_ws(args[i]))
         i++;
-    
-    while (!is_ws(args[i]))
-        i++;
+
     int no_sec = 0;
     if (is_end(args, &i) || args[i] == ':')
-    {   
-        puts("BRO");
         no_sec = 1;
-    }
 
     pos = i;
     std::string second;
@@ -192,7 +187,7 @@ std::vector<std::pair<std::string, std::string> > kick_inv(std::string buffer, i
         std::vector<std::pair<std::string, std::string> > chan_usr;
         if (no_sec)
         {
-            chan_usr.push_back(std::make_pair("", ""));  // no users to kick, NOT ENOUGH ARGS
+            chan_usr.push_back(std::make_pair("", "X"));  // no users to kick, NOT ENOUGH ARGS
             return chan_usr;
         }
         

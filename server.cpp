@@ -31,6 +31,7 @@ uint32_t server_c::getServer_socket() const {
 }
 
 void    server_c::init_server(const std::string &tmp_port, const std::string &tmp_password) {
+    
     struct      sockaddr_in socket_addr;
     int32_t     tmp_client_socket;
     int32_t     non_block;
@@ -115,7 +116,6 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                                     std::string newbuffer = betterbuffer.substr(i1, j - i1 + 1);
                                     i1 = j + 1; 
                                     newbuffer += '\0';
-                                    std::cout << "new: " << newbuffer;
                                     server_c::pars_cmd(newbuffer , client_c::_disc[i].fd);
                                 }
                             }
@@ -130,14 +130,21 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                             if (close(client_c::_disc[i].fd) == -1)
                                 std::cerr << "Error: close." << std::endl;
                             std::cout << "#" << client_c::_disc[i].fd << " disconnected" << std::endl;
-                            //delete joined channels.
-                            for (std::map<std::string, channels_c>::iterator it = channels_map.begin(); it != channels_map.end(); it++) {
+
+                            std::map<std::string, channels_c>::iterator it = channels_map.begin();
+                                while ( it != channels_map.end()) {
                                 if (search_user(channels_map, client_c::_disc[i].fd, 'o', it->first))
                                     channels_map[it->first]._operators.erase(std::find(channels_map[it->first]._operators.begin(), channels_map[it->first]._operators.end(), client_c::_disc[i].fd));
                                 if (search_user(channels_map, client_c::_disc[i].fd, 'm', it->first)) {
                                     channels_map[it->first]._members.erase(std::find(channels_map[it->first]._members.begin(), channels_map[it->first]._members.end(), client_c::_disc[i].fd));
-                                    //check if it was the last user then delete the channel.
+                                    channel_checker(it->first);
+                                    if (channels_map.begin() == channels_map.end())
+                                        break ;
+                                    it = channels_map.begin();
+                                    it++;
+                                    continue;
                                 }
+                                it++;
                             }
                             clients_map.erase(client_c::_disc[i].fd);
                             buffers_map.erase(client_c::_disc[i].fd);

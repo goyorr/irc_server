@@ -1,18 +1,6 @@
-check mode l(no feed back). done?
 
-test modes (+k) first. done?
-
-when users quits check all joined channels and delete user from them; done?
 
 
 if the memeber who left was operator chack if no more operators then assign next member as operator
 
-
-
-malik:
-        delete channel when empty;
-        if all ops out chose
-        in USER doesnt have to be 0 *? + real name can have multiple words if it starts with :real name
-
-
-test for malik: kicked but recieve privmsg on chan;
+parsing names nick, pass, user... READ doc

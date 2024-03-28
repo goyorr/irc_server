@@ -18,9 +18,9 @@ void    server_c::reg_user(const std::string &buffer, const uint32_t &client_soc
         std::string err;
         
         if (userpair.first == 1)
-            err = "no ZERO error, to check\n";
+            err = "ERROR: Malformed USER command. Syntax should be: <username> 0 * <realname>\n";
         else if (userpair.first == 3)
-            err = "no ASTERIX error, to check\n";
+            err = "ERROR: Malformed USER command. Syntax should be: <username> 0 * <realname>\n";
         else if (userpair.first == 2)
             err = "461 USER :Not enough parameters\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)

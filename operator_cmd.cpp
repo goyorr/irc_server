@@ -185,7 +185,7 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
 
     std::string err_msg;
 
-    if (kick_Vpair[0].first == "") {
+    if (kick_Vpair[0].second == "X") {
        err_msg = "461 " + clients_map[client_socket].getClient_nick() + " KICK :Not enough parameters\n" ;
        if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
@@ -198,6 +198,7 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
 
      for (size_t j = 1; j != kick_Vpair.size(); j++)
      {
+        bool found = false;
         user = kick_Vpair[j].second;
         if (channels_map.find(channel) != channels_map.end()) 
         {
@@ -209,6 +210,7 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                     {
                         if (clients_map[it->first].getClient_nick() == user) 
                         {
+                            found = true;
                             if(search_user(channels_map, it->first, 'm', channel)) 
                             {
                                 for (size_t i = 0; i < channels_map[channel]._members.size(); i++) {
@@ -217,8 +219,9 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                                         std::string rpl_msg = ":" + clients_map[client_socket].getClient_nick() + " KICK " + channel + " " + user + " :" + comment + "\n";
                                         if (send(client_socket, rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
                                             std::cerr << "Error: send." << std::endl;
-                                        channels_map[channel]._members.erase(channels_map[channel]._members.begin() + i);      //ERASE user
-                                        continue ;
+                                        channels_map[channel]._members.erase(channels_map[channel]._members.begin() + i);
+                                        channel_checker(channel);
+                                        break ;
                                     }
                                 }
                             }
@@ -229,10 +232,14 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                                 return ;
                             }
                         }
+                        if (found == false)
+                        {
+                            err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
+                            if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
+                                std::cerr << "Error: send." << std::endl;
+                        }
+                    
                     }
-                    err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
-                        if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
-                    std::cerr << "Error: send." << std::endl;
                 }
                 else {
                     err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not channel operator\n";

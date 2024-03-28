@@ -50,15 +50,23 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
             std::cout << "#" << client_socket << " disconnected" << std::endl;
-            for (std::map<std::string, channels_c>::iterator it = channels_map.begin(); it != channels_map.end(); it++) {
+
+            std::map<std::string, channels_c>::iterator it = channels_map.begin();
+            while (it != channels_map.end()) {
                 if (search_user(channels_map, client_socket, 'o', it->first))
                     channels_map[it->first]._operators.erase(std::find(channels_map[it->first]._operators.begin(), channels_map[it->first]._operators.end(), client_socket));
                 if (search_user(channels_map, client_socket, 'm', it->first)) {
                     channels_map[it->first]._members.erase(std::find(channels_map[it->first]._members.begin(), channels_map[it->first]._members.end(), client_socket));
-                    //check if it was the last user then delete the channel.
+                    channel_checker(it->first);
+                    if (channels_map.begin() == channels_map.end())
+                        break ;
+                    it = channels_map.begin();
+                    it++;
+                    continue;
                 }
-                break ;
+                it++;
             }
+
             for (size_t i = 0; i < client_c::_disc.size(); i++) {
                 if (client_c::_disc[i].fd == static_cast<int>(client_socket)) {
                     buffers_map.erase(client_c::_disc[i].fd);
@@ -106,14 +114,21 @@ void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_soc
             std::vector<uint32_t> pool;
             if (msgpair.first[i][0] == '#') {
                 if (channels_map.find(msgpair.first[i]) != channels_map.end()) {
-                    pool.insert(pool.end(), channels_map[msgpair.first[i]]._members.begin(), channels_map[msgpair.first[i]]._members.end());
+                    if (search_user(channels_map, client_socket, 'm', msgpair.first[i])) {
+                        pool.insert(pool.end(), channels_map[msgpair.first[i]]._members.begin(), channels_map[msgpair.first[i]]._members.end());
 
-                    std::set<uint32_t> betterPool(pool.begin(), pool.end());
-                    for (std::set<uint32_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
-                        if (*it == client_socket)
-                            continue;
-                        std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + msgpair.first[i] + " :" + msgpair.second + "\r\n";
-                        if (send(*it, message.c_str(), message.size(), 0) == -1)
+                        std::set<uint32_t> betterPool(pool.begin(), pool.end());
+                        for (std::set<uint32_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
+                            if (*it == client_socket)
+                                continue;
+                            std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + msgpair.first[i] + " :" + msgpair.second + "\r\n";
+                            if (send(*it, message.c_str(), message.size(), 0) == -1)
+                                std::cerr << "Error: send." << std::endl;
+                        }
+                    }
+                    else {
+                        std::string message = "404 " + clients_map[client_socket].getClient_nick() + " " + msgpair.first[i] + " :Cannot send to channel\r\n";
+                        if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                             std::cerr << "Error: send." << std::endl;
                     }
                 }

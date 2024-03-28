@@ -9,3 +9,9 @@ void server_c::signalHandler(int signal) {
     }
     std::exit(signal);
 }
+
+void server_c::channel_checker(std::string channel_name)
+{
+    if (channels_map[channel_name]._members.size() == 0)
+        channels_map.erase(channel_name);
+}
