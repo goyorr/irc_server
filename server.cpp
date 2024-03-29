@@ -43,7 +43,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     setPort(tmp_port);
     setPassword(tmp_password);
 
-    tmp_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    tmp_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (tmp_socket == -1)
         return std::cerr << "Error: socket." << std::endl, (void)NULL;
 

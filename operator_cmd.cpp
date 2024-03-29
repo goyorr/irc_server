@@ -11,6 +11,18 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
     if (subjects.size() > 0)
         subs = sort_subs(subjects);
 
+    if (modes == "xx") {
+        std::string err = "461 " + clients_map[client_socket].getClient_nick() + " MODE :Not enough parameters\n";
+        if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+            std::cerr << "Error: send." << std::endl;
+        return ;
+    }
+    if (modes == "00") {
+        std::string err = "501 " + clients_map[client_socket].getClient_nick() + " :Unknown MODE flag\n";
+        if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+            std::cerr << "Error: send." << std::endl;
+        return ;
+    }
     //check if channels exists.
     if (channels_map.find(channel_name) == channels_map.end()) {
         std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No such channel\n";
@@ -54,16 +66,6 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
             case(108):
                 mode_l(channel_name, client_socket, modes[i] == '+' ? true : false, subs.size() > s ? subs[s] : ""); modes[i] == '+' ? s++ : sleep(0);
                 break;
-            case(48):
-                    err = "501 " + clients_map[client_socket].getClient_nick() + " :Unknown MODE flag\n";
-                if (send(client_socket, err.c_str(), err.size(), 0) == -1)
-                    std::cerr << "Error: send." << std::endl;
-                return ;
-            default:
-                    err = "461 " + clients_map[client_socket].getClient_nick() + " MODE :Not enough parameters\n";
-                if (send(client_socket, err.c_str(), err.size(), 0) == -1)
-                    std::cerr << "Error: send." << std::endl;
-                return ;
         }
     }
 }
@@ -216,9 +218,13 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                                 for (size_t i = 0; i < channels_map[channel]._members.size(); i++) {
                                     if (it->first == channels_map[channel]._members[i]) 
                                     {
-                                        std::string rpl_msg = ":" + clients_map[client_socket].getClient_nick() + " KICK " + channel + " " + user + " :" + comment + "\n";
-                                        if (send(client_socket, rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
-                                            std::cerr << "Error: send." << std::endl;
+                                        if (!channels_map[channel]._members.empty()) {
+                                            for (size_t i = 0; i < channels_map[channel]._members.size(); i++) {
+                                                std::string rpl_msg = ":" + clients_map[client_socket].getClient_nick() + " KICK " + channel + " " + user + " :" + comment + "\n";
+                                                if (send(channels_map[channel]._members[i], rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
+                                                    std::cerr << "Error: send." << std::endl;
+                                            }
+                                        }
                                         channels_map[channel]._members.erase(channels_map[channel]._members.begin() + i);
                                         if (search_user(channels_map, it->first, 'o', channel))
                                             channels_map[channel]._operators.erase(std::find(channels_map[channel]._operators.begin(), channels_map[channel]._operators.end(), it->first));
@@ -274,7 +280,6 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
     std::vector<std::pair<std::string, std::string> > invitations = kick_inv(buffer, 1);
     std::string err_msg;
 
-    std::cout << "|" << invitations[0].first << "|" << std::endl;
     if(invitations[0].first == "")
     {
         err_msg = "461 " + clients_map[client_socket].getClient_nick() + " INVITE :Not enough parameters\n" ;
@@ -332,7 +337,7 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
     }
     else
     {
-        err_msg = "403 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :No such channel \n";  //  "<client> <channel> :No such channel"  403
+        err_msg = "403 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :No such channel \n";
         if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }

@@ -113,6 +113,21 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
                 std::cerr << "Error: send." << std::endl;
                 exit (1);
             }
+            std::string message = "002 Your host is :Welcome to the ft_irc Network\n";
+            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
+                std::cerr << "Error: send." << std::endl;
+                exit (1);
+            }
+            std::string message = "003 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network\n";
+            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
+                std::cerr << "Error: send." << std::endl;
+                exit (1);
+            }
+            std::string message = "004 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network\n";
+            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
+                std::cerr << "Error: send." << std::endl;
+                exit (1);
+            }
             clients_map[client_socket].setRegistered(true);
         }
     }
