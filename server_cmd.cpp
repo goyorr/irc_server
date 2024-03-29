@@ -45,6 +45,8 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
             topic_cmd(buffer, client_socket);
         else if (cmd == "MODE")
             mode_cmd(buffer, client_socket);
+        else if (cmd == "BOT")
+            bot_cmd(buffer, client_socket);
         else if (cmd == "QUIT") {
             std::string message = ":" + clients_map[client_socket].getClient_nick() + " QUIT :lol\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
@@ -158,11 +160,37 @@ void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_soc
                     std::cerr << "Error: send." << std::endl;
             }
         }
+
+        #ifdef FILE_TRANSFER
+            DCC SEND is another standard sub-protocol. Most clients implement this as well, many have tried to enhance it.
+
+            The basic DCC SEND protocol allows transferring a file from the requesting client to the receiving client.
+
+            The requesting client (the one that sends the file) is always passive and the receiving client is always active.
+
+            This is a huge protocol limitation since firewalled clients are often unable to accept incoming connections.
+
+            The negotiation protocol is more complex than DCC chat; we assume that client A wants to send the file F to client B.
+
+            client A sets up a listening socket and retrieves its IP address and port.
+
+            client A sends a CTCP request to client B in the following form:
+                DCC SEND <filename> <ipaddress> <port> <filesize>
+            <ipaddress> and <port> have the same semantics as in the DCC chat sub-protocol.
+            <filename> is the name (without path!) of the file to be sent, and <filesize> is (yeah), the file size.
+
+            client B receives the CTCP, parses it, eventually asks the user for confirmation and connects to the specified IP address and port; the transfer then begins.
+            client A sends blocks of data (usually 1-2 KB) and at every block awaits confirmation from the client B,
+
+            that when receiving a block should reply 4 bytes containing an positive number specifying the total size of the file received up to that moment.
+
+            The transmission closes when the last acknowledge is received by client A.
+        #endif
         std::set<uint32_t> betterPool(pool.begin(), pool.end());
         for (std::set<uint32_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
             if (*it == client_socket)
                 continue;
-            std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + clients_map[*it].getClient_nick() +" :" + msgpair.second + "\r\n";
+            std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + clients_map[*it].getClient_nick() + " :" + msgpair.second + "\r\n";
             if (send(*it, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
@@ -256,5 +284,28 @@ void    server_c::join_channel(const std::string &channel_name, const uint32_t &
         std::cerr << "Error: send." << std::endl;
     message = "366 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :End of /NAMES list\n";
     if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+        std::cerr << "Error: send." << std::endl;
+}
+
+void    server_c::bot_cmd(const std::string &buffer, const uint32_t &client_socket) {
+    (void)buffer;
+    std::string channel_name = "#LOL";
+    std::string message;
+    std::string message1;
+
+    if (channels_map.find(channel_name) == channels_map.end()) {
+        std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No such channel\r\n";
+        if (send(client_socket, err.c_str(), err.size(), 0) == -1)
+            std::cerr << "Error: send." << std::endl;
+        return ;
+    }
+    message = "The channel " + channel_name + " has " + std::to_string(channels_map[channel_name]._members.size()) + " memebers: ";
+    for (size_t i = 0; i < channels_map[channel_name]._members.size(); i++) {
+        if (search_user(channels_map, channels_map[channel_name]._members[i], 'o', channel_name))
+            message += "@";
+        message += clients_map[channels_map[channel_name]._members[i]].getClient_nick() + " ";
+    }
+    message1 = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG BOT :" + message + "\n";
+    if (send(client_socket, message1.c_str(), message1.size(), 0) == -1)
         std::cerr << "Error: send." << std::endl;
 }

@@ -51,6 +51,8 @@ class server_c {
                 void                invite_cmd(const std::string &buffer, const uint32_t &client_socket);
                 void                topic_cmd(const std::string &buffer, const uint32_t &client_socket);
 
+                void                bot_cmd(const std::string &channel_name, const uint32_t &client_socket);
+
                 template<typename container>
                 bool    search_user(container location, uint32_t target, char type, std::string key) {
                     if (type == 'm') {

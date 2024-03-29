@@ -1,4 +1,5 @@
 #include "./headers/includes.h"
+#include <netdb.h>
 
 server_c::server_c() {
 }
@@ -31,7 +32,7 @@ uint32_t server_c::getServer_socket() const {
 }
 
 void    server_c::init_server(const std::string &tmp_port, const std::string &tmp_password) {
-    
+
     struct      sockaddr_in socket_addr;
     int32_t     tmp_client_socket;
     int32_t     non_block;
