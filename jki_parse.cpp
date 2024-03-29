@@ -79,12 +79,6 @@ std::pair<std::vector<std::string>, std::vector<std::string> > join_pars(std::st
     return join_pair;
 }
 
-
-
-
-
-
-
 std::vector<std::pair<std::string, std::string> > kick_inv(std::string buffer, int ki){
 
     std::vector<std::pair<std::string, std::string> > ki_generic;
@@ -95,9 +89,26 @@ std::vector<std::pair<std::string, std::string> > kick_inv(std::string buffer, i
         i++;
     while (is_ws(buffer[i]))
         i++;
-    if (is_end(buffer, &i) || buffer[i] == ':')
+
+    if (!isprint(buffer[i]))
+        buffer[i] = '\0';
+    
+
+    if (!buffer[i] || buffer[i] == '\n' || is_end(buffer, &i) || buffer[i] == ':')
     {
-        ki_generic.push_back(std::make_pair("", ""));  // not enough args ERR;
+        ki_generic.push_back(std::make_pair("", "X"));  // not enough args ERR;
+        return ki_generic;
+    }
+    int i1 = i;
+    while (!is_ws(buffer[i1]))
+        i1++;
+    while (is_ws(buffer[i1]))
+        i1++;
+    if (!isprint(buffer[i1]))
+        buffer[i1] = '\0';
+    if (!buffer[i1] || buffer[i1] == '\n' || is_end(buffer, &i1) || buffer[i1] == ':')
+    {
+        ki_generic.push_back(std::make_pair("", "X"));  // not enough args ERR;
         return ki_generic;
     }
 
@@ -106,10 +117,8 @@ std::vector<std::pair<std::string, std::string> > kick_inv(std::string buffer, i
         pos--;
     while (is_ws(buffer[pos]))
         pos--;
-    
 
-    std::string args = buffer.substr(i, pos - i + 1);    //#chan,#chan1 pass,pass1
-
+    std::string args = buffer.substr(i, pos - i + 1);  
     int multi_chn = 0;
     i = 0;
     pos = i;
@@ -140,13 +149,11 @@ std::vector<std::pair<std::string, std::string> > kick_inv(std::string buffer, i
 
     pos = i;
     std::string second;
-    std::cout << no_sec << std::endl;
     if (!no_sec)
     {
         while (args[i] && !is_ws(args[i]) && !is_end(args, &i))
             i++;
         second = args.substr(pos, i - pos);
-    std::cout << "+" << second << "+" << std::endl;
     }
     
     std::string com;
@@ -203,15 +210,12 @@ std::vector<std::pair<std::string, std::string> > kick_inv(std::string buffer, i
     }
     else if (ki == 1)
     {
-        std::vector<std::pair<std::string, std::string> > usr_chan;
-        if (no_sec){
-            usr_chan.push_back(std::make_pair("", "")); // not enough param
-            return usr_chan;
-        }
+
         size_t multi_usrs = first.find(',');
         if (multi_usrs != std::string::npos)
             first = first.substr(0, multi_usrs);
-        
+
+        std::vector<std::pair<std::string, std::string> > usr_chan;
         if (no_sec)
         {
             usr_chan.push_back(std::make_pair("", ""));  // no users for invite, NOT ENOUGH ARGS

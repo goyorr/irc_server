@@ -87,6 +87,9 @@ std::pair<int, std::string> nick_parse(std::string str){
     int i = 0;
     while (!is_end(str, &i))
         i++;
+    i--;
+    while (is_ws(str[i]))
+        i--;
     std::string nick = str.substr(0, i);
     i = 0;
     while(nick[i]){
