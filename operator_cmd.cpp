@@ -309,7 +309,7 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
                                 return ; 
                         }
                     }
-                    err_msg = "40111 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
+                    err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
                     if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                         std::cerr << "Error: send." << std::endl;
                 }
