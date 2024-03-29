@@ -220,6 +220,8 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                                         if (send(client_socket, rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
                                             std::cerr << "Error: send." << std::endl;
                                         channels_map[channel]._members.erase(channels_map[channel]._members.begin() + i);
+                                        if (search_user(channels_map, it->first, 'o', channel))
+                                            channels_map[channel]._operators.erase(std::find(channels_map[channel]._operators.begin(), channels_map[channel]._operators.end(), it->first));
                                         if (channels_map[channel]._operators.empty())
                                         {
                                             if (!channels_map[channel]._members.empty())
