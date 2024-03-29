@@ -15,6 +15,9 @@ class server_c {
                 std::map<uint32_t,    client_c>     clients_map;
                 std::map<std::string, channels_c>   channels_map;
 
+                std::string _hostname;
+                std::string _time;
+
                 void                setPort(const std::string &tmp);
                 void                setPassword(const std::string &tmp);
                 void                setServer_socket(const uint32_t &tmp);

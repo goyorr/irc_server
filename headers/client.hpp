@@ -15,6 +15,8 @@ class client_c {
             client_c();
             ~client_c();
 
+                std::string ipaddr;
+
             static std::vector<pollfd> _disc;
 
             std::string                 getClient_nick() const;

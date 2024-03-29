@@ -39,6 +39,9 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     int32_t     tmp_socket;
     ssize_t     bytes;
 
+    std::time_t currentTime = std::time(nullptr);
+    _time = std::ctime(&currentTime);
+
     signal(SIGINT, signalHandler);
     setPort(tmp_port);
     setPassword(tmp_password);
@@ -66,6 +69,13 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     client_c::_disc[0].fd = getServer_socket();
     client_c::_disc[0].events = POLLIN;
     client_c::_disc[0].revents = 0;
+
+    char hostname[256];
+    if (gethostname(hostname, sizeof(hostname)) == -1) {
+        std::cerr << "Error: gethostname" << std::endl;
+        return ;
+    }
+    _hostname = hostname;
 
     while (true) {
         non_block = poll(client_c::_disc.data(), client_c::_disc.size(), 0);

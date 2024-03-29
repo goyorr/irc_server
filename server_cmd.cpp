@@ -108,27 +108,33 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
         }
         if (clients_map[client_socket].getAuth() && clients_map[client_socket].getRegNick() && clients_map[client_socket].getRegUser()) {
             std::cout << clients_map[client_socket].getClient_nick()  << " authenticated successfully." << std::endl;
-            std::string message = "001 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network\n";
-            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
-                std::cerr << "Error: send." << std::endl;
-                exit (1);
-            }
-            std::string message = "002 Your host is :Welcome to the ft_irc Network\n";
-            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
-                std::cerr << "Error: send." << std::endl;
-                exit (1);
-            }
-            std::string message = "003 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network\n";
-            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
-                std::cerr << "Error: send." << std::endl;
-                exit (1);
-            }
-            std::string message = "004 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network\n";
-            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
-                std::cerr << "Error: send." << std::endl;
-                exit (1);
-            }
             clients_map[client_socket].setRegistered(true);
+
+            struct sockaddr_in cl_socket_addr;
+            socklen_t addr_len = sizeof(cl_socket_addr);
+            getsockname(client_socket, (struct sockaddr *)&cl_socket_addr, &addr_len);
+            clients_map[client_socket].ipaddr = inet_ntoa(cl_socket_addr.sin_addr);
+
+            std::string message = "001 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network, " + clients_map[client_socket].getClient_nick() + "!" + clients_map[client_socket].getClient_user() + "@" + clients_map[client_socket].ipaddr + "\n";
+            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
+                std::cerr << "Error: send." << std::endl;
+                exit (1);
+            }
+            message = "002 " + clients_map[client_socket].getClient_nick() + " :Your host is " + _hostname + ", running version V80.34f.2.09-0D\n";
+            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
+                std::cerr << "Error: send." << std::endl;
+                exit (1);
+            }
+            message = "003 " + clients_map[client_socket].getClient_nick() + " :This server was created " + _time + "\n";
+            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
+                std::cerr << "Error: send." << std::endl;
+                exit (1);
+            }
+            message = "004 " + clients_map[client_socket].getClient_nick() + " " + _hostname + " V80.34f.2.09-0D itkol\n";
+            if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
+                std::cerr << "Error: send." << std::endl;
+                exit (1);
+            }
         }
     }
 }
