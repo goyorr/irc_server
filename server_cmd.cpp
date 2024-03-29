@@ -16,8 +16,6 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
             std::string message;
             std::pair<uint32_t, std::string> nickpair = regi_parse(buffer, 1);
 
-            std::cout << "first: |" << nickpair.first << "|" << std::endl;
-
             if (!nickpair.first) {
                 for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
                     if (nickpair.second == clients_map[it->first].getClient_nick()) {
@@ -33,8 +31,6 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
                     std::cerr << "Error: send." << std::endl;
             }
             else if (nickpair.first == 1){
-
-                puts ("tf??");
                 message = "431 " + clients_map[client_socket].getClient_nick() + " :No nickname given\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;

@@ -61,7 +61,6 @@ std::pair<int, std::string> user_parse(std::string usr)     // mlk 0 * realname
     }
     while (is_ws(usr[i]))    
         i++;
-    std::cout << usr[i] << std::endl;
     if (is_end(usr, &i)){
         res.first = 2; return res;
     }
@@ -77,7 +76,6 @@ std::pair<int, std::string> user_parse(std::string usr)     // mlk 0 * realname
             i++;
     }
     std::string realname = usr.substr(pos, i - pos);
-    // std::cout << "rel: |" << realname << "|" << std::endl;
     res.second = username + " " + realname;
     res.first = 0;
     return res;
@@ -89,7 +87,6 @@ bool nick_parse(std::string str){
     while (!is_end(str, &i))
         i++;
     std::string nick = str.substr(0, i);
-    std::cout << "NICK :|" << nick << "|" << std::endl;
     i = 0;
     while(nick[i]){
         if (!isalnum(nick[i]) && nick[i] != '[' && nick[i] != ']' && nick[i] != '|' && nick[i] != '{' && nick[i] != '}' && nick[i] != '\'')
