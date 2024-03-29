@@ -43,17 +43,6 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     setPort(tmp_port);
     setPassword(tmp_password);
 
-    #ifdef SOCKET_PARAM
-            PARAM1 domain:
-                specifies communication domain. We use AF_ LOCAL as defined in the POSIX standard for communication between processes on the same host.
-                For communicating between processes on different hosts connected by IPV4, we use AF_INET and AF_I NET 6 for processes connected by IPV6.
-            PARAM2 type:
-                SOCK_STREAM == TCP. as specified in subject.
-            PARAM3 protocol:
-                if set to 0 the operating system will choose the default protocol based on the specified address family (AF_INET) and socket type (SOCK_STREAM).
-                insted ill expicitly specify it by using (IPPROTO_TCP).
-    #endif
-
     tmp_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (tmp_socket == -1)
         return std::cerr << "Error: socket." << std::endl, (void)NULL;

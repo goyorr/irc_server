@@ -323,3 +323,12 @@ void    server_c::bot_cmd(const std::string &buffer, const uint32_t &client_sock
     if (send(client_socket, message1.c_str(), message1.size(), 0) == -1)
         std::cerr << "Error: send." << std::endl;
 }
+
+void server_c::channel_checker(std::string channel_name) {
+    if (channels_map[channel_name]._members.size() == 0)
+        channels_map.erase(channel_name);
+}
+
+void server_c::assign_operator(const std::string channel_name) {
+    channels_map[channel_name]._operators.push_back(channels_map[channel_name]._members[0]);
+}
