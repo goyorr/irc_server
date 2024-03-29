@@ -52,21 +52,51 @@ std::pair<int, std::string> user_parse(std::string usr)     // mlk 0 * realname
         res.first = 3; return res;
     }
     i++;
-    if (is_end(usr, &i)) {
+    if (is_end(usr, &i)){
         res.first = 2; return res;
+    }
+
+    if (usr[i] != ' ' && usr[i] != '\t'){
+        res.first = 3; return res;
     }
     while (is_ws(usr[i]))    
         i++;
-    if (is_end(usr, &i)) {
+    std::cout << usr[i] << std::endl;
+    if (is_end(usr, &i)){
         res.first = 2; return res;
     }
     pos = i;
-    while (!is_ws(usr[i]))      // realname;
-        i++;
+    if (usr[i] != ':')
+    {
+        while (!is_ws(usr[i]))      // realname;
+            i++;
+    }
+    else{
+        pos++;                     // skip FIRST ws for real name in case of : ?
+        while (!is_end(usr, &i))
+            i++;
+    }
     std::string realname = usr.substr(pos, i - pos);
+    // std::cout << "rel: |" << realname << "|" << std::endl;
     res.second = username + " " + realname;
     res.first = 0;
     return res;
+}
+
+bool nick_parse(std::string str){
+
+    int i = 0;
+    while (!is_end(str, &i))
+        i++;
+    std::string nick = str.substr(0, i);
+    std::cout << "NICK :|" << nick << "|" << std::endl;
+    i = 0;
+    while(nick[i]){
+        if (!isalnum(nick[i]) && nick[i] != '[' && nick[i] != ']' && nick[i] != '|' && nick[i] != '{' && nick[i] != '}' && nick[i] != '\'')
+            return false;
+        i++;
+    }
+    return true ;
 }
 
 std::pair<int, std::string> regi_parse(std::string str, int flag) {
@@ -109,6 +139,17 @@ std::pair<int, std::string> regi_parse(std::string str, int flag) {
     tmp = i;
     while(!is_ws(str[i]) && !is_end(str, &i))
         i++;
+
+    if (flag == 1)
+    {
+        std::string post = str.substr(tmp, str.size() - tmp);
+        if (nick_parse(post) == false)
+        {
+            res.first = 1; return res;
+        }
+        else
+            res.first = 0;
+    }
     if (flag == 2) {
         std::string post = str.substr(tmp, str.size() - tmp);
         std::pair<int, std::string> user_check = user_parse(post);

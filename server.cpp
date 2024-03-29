@@ -133,9 +133,12 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                             std::cout << "#" << client_c::_disc[i].fd << " disconnected" << std::endl;
 
                             std::map<std::string, channels_c>::iterator it = channels_map.begin();
-                                while ( it != channels_map.end()) {
-                                if (search_user(channels_map, client_c::_disc[i].fd, 'o', it->first))
+                            while ( it != channels_map.end()) {
+                                if (search_user(channels_map, client_c::_disc[i].fd, 'o', it->first)) {
                                     channels_map[it->first]._operators.erase(std::find(channels_map[it->first]._operators.begin(), channels_map[it->first]._operators.end(), client_c::_disc[i].fd));
+                                    if (channels_map[it->first]._operators.size() == 0 && channels_map[it->first]._members.size() > 1)
+                                        assign_operator(it->first);
+                                }
                                 if (search_user(channels_map, client_c::_disc[i].fd, 'm', it->first)) {
                                     channels_map[it->first]._members.erase(std::find(channels_map[it->first]._members.begin(), channels_map[it->first]._members.end(), client_c::_disc[i].fd));
                                     channel_checker(it->first);

@@ -15,3 +15,8 @@ void server_c::channel_checker(std::string channel_name)
     if (channels_map[channel_name]._members.size() == 0)
         channels_map.erase(channel_name);
 }
+
+void server_c::assign_operator(const std::string channel_name) {
+    
+    channels_map[channel_name]._operators.push_back(channels_map[channel_name]._members[0]);
+}

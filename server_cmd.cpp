@@ -4,6 +4,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
     if (clients_map.find(client_socket) != clients_map.end() && clients_map[client_socket].getRegistered()) {
         std::string cmd = select_cmd(buffer);
 
+
         if (cmd == "PRIVMSG")
             priv_msg(buffer, client_socket);
         else if (cmd == "PASS" || cmd == "USER") {
@@ -14,6 +15,8 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
         else if (cmd == "NICK") {
             std::string message;
             std::pair<uint32_t, std::string> nickpair = regi_parse(buffer, 1);
+
+            std::cout << "first: |" << nickpair.first << "|" << std::endl;
 
             if (!nickpair.first) {
                 for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
@@ -28,6 +31,14 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
                 clients_map[client_socket].setClient_nick(nickpair.second);
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
+            }
+            else if (nickpair.first == 1){
+
+                puts ("tf??");
+                message = "431 " + clients_map[client_socket].getClient_nick() + " :No nickname given\n";
+                if (send(client_socket, message.c_str(), message.size(), 0) == -1)
+                    std::cerr << "Error: send." << std::endl;
+
             }
             else if (nickpair.first == 2) {
                 message = "461 " + clients_map[client_socket].getClient_nick() + " NICK :Not enough parameters\n";
@@ -55,8 +66,11 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
 
             std::map<std::string, channels_c>::iterator it = channels_map.begin();
             while (it != channels_map.end()) {
-                if (search_user(channels_map, client_socket, 'o', it->first))
+                if (search_user(channels_map, client_socket, 'o', it->first)) {
                     channels_map[it->first]._operators.erase(std::find(channels_map[it->first]._operators.begin(), channels_map[it->first]._operators.end(), client_socket));
+                    if (channels_map[it->first]._operators.size() == 0 && channels_map[it->first]._members.size() > 1)
+                        assign_operator(it->first);
+                }
                 if (search_user(channels_map, client_socket, 'm', it->first)) {
                     channels_map[it->first]._members.erase(std::find(channels_map[it->first]._members.begin(), channels_map[it->first]._members.end(), client_socket));
                     channel_checker(it->first);
