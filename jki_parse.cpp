@@ -140,11 +140,13 @@ std::vector<std::pair<std::string, std::string> > kick_inv(std::string buffer, i
 
     pos = i;
     std::string second;
+    std::cout << no_sec << std::endl;
     if (!no_sec)
     {
         while (args[i] && !is_ws(args[i]) && !is_end(args, &i))
             i++;
         second = args.substr(pos, i - pos);
+    std::cout << "+" << second << "+" << std::endl;
     }
     
     std::string com;
@@ -201,11 +203,15 @@ std::vector<std::pair<std::string, std::string> > kick_inv(std::string buffer, i
     }
     else if (ki == 1)
     {
+        std::vector<std::pair<std::string, std::string> > usr_chan;
+        if (no_sec){
+            usr_chan.push_back(std::make_pair("", "")); // not enough param
+            return usr_chan;
+        }
         size_t multi_usrs = first.find(',');
         if (multi_usrs != std::string::npos)
             first = first.substr(0, multi_usrs);
         
-        std::vector<std::pair<std::string, std::string> > usr_chan;
         if (no_sec)
         {
             usr_chan.push_back(std::make_pair("", ""));  // no users for invite, NOT ENOUGH ARGS

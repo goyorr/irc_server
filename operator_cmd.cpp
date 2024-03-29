@@ -272,6 +272,7 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
     std::vector<std::pair<std::string, std::string> > invitations = kick_inv(buffer, 1);
     std::string err_msg;
 
+    std::cout << "|" << invitations[0].first << "|" << std::endl;
     if(invitations[0].first == "")
     {
         err_msg = "461 " + clients_map[client_socket].getClient_nick() + " INVITE :Not enough parameters\n" ;
