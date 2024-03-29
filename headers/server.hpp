@@ -68,6 +68,7 @@ class server_c {
                     return true;
                 }
                 void                channel_checker(std::string channel_name);
+                void                assign_operator(std::string channel_name);
 };
 
 #endif

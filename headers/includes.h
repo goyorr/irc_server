@@ -14,7 +14,10 @@
 #include "channels.hpp"
 #include "client.hpp"
 #include "server.hpp"
+#include <cstdlib>
+#include <ctime>
 
+void                                                            assign_operator(std::map<std::string, channels_c>& channels_map, const std::string& channel);
 std::pair<std::vector<std::string>, std::vector<std::string> >  join_pars(std::string buffer);
 std::vector<std::pair<std::string, std::string> >               kick_inv(std::string buffer, int ki);
 std::pair<std::string, std::pair<std::string, std::string> >    parse_mode(std::string buffer);

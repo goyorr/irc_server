@@ -220,7 +220,13 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                                         if (send(client_socket, rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
                                             std::cerr << "Error: send." << std::endl;
                                         channels_map[channel]._members.erase(channels_map[channel]._members.begin() + i);
-                                        channel_checker(channel);
+                                        if (channels_map[channel]._operators.empty())
+                                        {
+                                            if (!channels_map[channel]._members.empty())
+                                                assign_operator(channel);
+                                            else
+                                                channel_checker(channel);
+                                        }
                                         break ;
                                     }
                                 }
