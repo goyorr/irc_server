@@ -81,19 +81,20 @@ std::pair<int, std::string> user_parse(std::string usr)     // mlk 0 * realname
     return res;
 }
 
-bool nick_parse(std::string str){
+std::pair<int, std::string> nick_parse(std::string str){
 
+    std::pair<int, std::string> nick_check;
     int i = 0;
     while (!is_end(str, &i))
         i++;
     std::string nick = str.substr(0, i);
     i = 0;
     while(nick[i]){
-        if (!isalnum(nick[i]) && nick[i] != '[' && nick[i] != ']' && nick[i] != '|' && nick[i] != '{' && nick[i] != '}' && nick[i] != '\'')
-            return false;
+        if (!isalnum(nick[i]) && nick[i] != '[' && nick[i] != ']' && nick[i] != '|' && nick[i] != '{' && nick[i] != '}' && nick[i] != '\'' && nick[i] != '_')
+            nick_check.first = 1;   
         i++;
     }
-    return true ;
+    return nick_check ;
 }
 
 std::pair<int, std::string> regi_parse(std::string str, int flag) {
@@ -140,8 +141,10 @@ std::pair<int, std::string> regi_parse(std::string str, int flag) {
     if (flag == 1)
     {
         std::string post = str.substr(tmp, str.size() - tmp);
-        if (nick_parse(post) == false)
+        std::pair<int, std::string> nick_check = nick_parse(post);
+        if (nick_check.first == 1)
         {
+            res.second = nick_check.second;
             res.first = 1; return res;
         }
         else

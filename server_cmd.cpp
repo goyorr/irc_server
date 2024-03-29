@@ -31,7 +31,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
                     std::cerr << "Error: send." << std::endl;
             }
             else if (nickpair.first == 1){
-                message = "431 " + clients_map[client_socket].getClient_nick() + " :No nickname given\n";
+                message = "432 " + clients_map[client_socket].getClient_nick() + " " + nickpair.second + " :Erroneus nickname\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
 

@@ -54,7 +54,7 @@ void    server_c::reg_nick(const std::string &buffer, const uint32_t &client_soc
         if (nickpair.first == 2)
             err = "461 NICK :Not enough parameters\n";
         else if (nickpair.first == 1)
-            err = "431 :No nickname given\n";
+            err = "431 " + nickpair.second + " :Erroneus nickname\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }
