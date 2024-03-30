@@ -292,9 +292,31 @@ void    server_c::join_channel(const std::string &channel_name, const uint32_t &
         std::cerr << "Error: send." << std::endl;
 }
 
+std::string bot_pars(std::string buffer)
+{
+    int pos = buffer.find('T');
+    pos++;
+    while (is_ws(buffer[pos]))
+        pos++;
+    puts ("k2");
+    std::cout << (int)buffer[pos] << std::endl;
+    if (!isprint(buffer[pos]))
+        return "";
+    puts ("k3");
+    int i = pos;
+    while (!is_ws(buffer[i]) && !is_end(buffer, &i))
+        i++;
+    std::string channel = buffer.substr(pos, i - pos);
+    return channel;
+
+}
+
 void    server_c::bot_cmd(const std::string &buffer, const uint32_t &client_socket) {
-    (void)buffer;
-    std::string channel_name = "#LOL";
+
+    std::string channel_name = bot_pars(buffer);
+    // std::cout << "|" << channel_name << "|" << std::endl;
+    if (channel_name.empty())
+        return ;
     std::string message;
     std::string message1;
 

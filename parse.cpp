@@ -9,7 +9,7 @@ int is_ws(int c)
 
 int is_end(std::string str, int *i)
 {
-    if (str[*i] == '\r' || str[*i] == '\n' || !str[*i])
+    if (str[*i] == '\r' || str[*i] == '\n'|| !str[*i])
         return 1;
     return 0;
     
