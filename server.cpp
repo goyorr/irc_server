@@ -46,12 +46,12 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     setPort(tmp_port);
     setPassword(tmp_password);
 
-    tmp_socket = socket(AF_INET, SOCK_STREAM, 0);
+    tmp_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (tmp_socket == -1)
         return std::cerr << "Error: socket." << std::endl, (void)NULL;
 
-    int i1 = 1;
-    setsockopt(tmp_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&i1, sizeof(i1));
+    int a = 1;
+    setsockopt(tmp_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&a, sizeof(a));
 
     setServer_socket(tmp_socket);
 
@@ -162,66 +162,3 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     if (close(getServer_socket()) == -1)
         std::cerr << "Error: close." << std::endl;
 }
-
-
-
-#ifdef NOTES
-
-kernel will automatically bind the socket to a suitable port number when you try to connect or send. 
-
- Sockets in C:
-
-1. **Socket Creation:**
-   - The `socket()` function is used to create a socket.
-   - Example: `int server_socket = socket(AF_INET, SOCK_STREAM, 0);`
-   - This creates a socket for IPv4 communication using TCP.
-
-2. **Socket Address Structure (`sockaddr_in`):**
-   - The `struct sockaddr_in` structure is used to define socket addresses.
-   - It includes fields like `sin_family`, `sin_addr`, and `sin_port`.
-
-### Binding a Socket:
-
-3. **Binding to a Local Address:**
-   - The `bind()` function associates a socket with a local address and port.
-   - Example: `bind(server_socket, (struct sockaddr*)&server_address, sizeof(server_address));`
-
-4. **INADDR_ANY (IPv4) and in6addr_any (IPv6):**
-   - Using `INADDR_ANY` in the `sin_addr.s_addr` field means the socket can accept connections on any available local IPv4 address.
-   - For IPv6, `in6addr_any` serves a similar purpose.
-
-5. **Flexibility with INADDR_ANY:**
-   - Binding to `INADDR_ANY` allows a server to accept connections on all available local IP addresses, whether private or public.
-   - This flexibility is useful when a machine is connected to multiple networks.
-
-6. **Specific Local IP Address:**
-   - If desired, a specific local IP address can be used instead of `INADDR_ANY` by specifying the IP address in the `sin_addr.s_addr` field.
-
- Network Configuration:
-
-7. **Public and Private IP Addresses:**
-   - `INADDR_ANY` allows a server to handle connections on both private (e.g., 192.168.x.x) and public IP addresses.
-
-8. **Handling Connections Across Networks:**
-   - The flexibility provided by `INADDR_ANY` is particularly useful when a machine is connected to multiple networks, enabling the server to handle connections from various sources.
-
- Notes:
-
-- **Security Considerations:**
-  - When exposing a server to the internet, security measures (firewall rules, encryption) should be implemented.
-  
-- **IPv6 Considerations:**
-  - For IPv6, use `in6addr_any` and handle IPv6-specific configurations.
-
-- **Port Configuration:**
-  - The port number is set using `sin_port`. In the examples, `htons(8080)` specifies port 8080.
-
-- **Client Binding:**
-  - Clients typically do not bind unless using a specific local port.
-
-- **Error Handling:**
-  - Check for errors after each system call (`socket()`, `bind()`) and handle them appropriately.
-
-These concepts are foundational for socket programming, allowing for the creation of flexible and configurable networked applications.
-
-#endif

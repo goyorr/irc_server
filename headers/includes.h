@@ -16,6 +16,7 @@
 #include "server.hpp"
 #include <cstdlib>
 #include <ctime>
+#include <fcntl.h>
 
 void                                                            assign_operator(std::map<std::string, channels_c>& channels_map, const std::string& channel);
 std::pair<std::vector<std::string>, std::vector<std::string> >  join_pars(std::string buffer);

@@ -12,34 +12,34 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
         subs = sort_subs(subjects);
 
     if (modes == "xx") {
-        std::string err = "461 " + clients_map[client_socket].getClient_nick() + " MODE :Not enough parameters\n";
+        std::string err = "461 " + clients_map[client_socket].getClient_nick() + " MODE :Not enough parameters\r\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return ;
     }
     if (modes == "00") {
-        std::string err = "501 " + clients_map[client_socket].getClient_nick() + " :Unknown MODE flag\n";
+        std::string err = "501 " + clients_map[client_socket].getClient_nick() + " :Unknown MODE flag\r\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return ;
     }
     //check if channels exists.
     if (channels_map.find(channel_name) == channels_map.end()) {
-        std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No such channel\n";
+        std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No such channel\r\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return ;
     }
     //check if user joined the channel.
     if (!search_user(channels_map, client_socket, 'm', channel_name)) {
-        std::string err = "442 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not on that channel\n";
+        std::string err = "442 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not on that channel\r\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return ;
     }
     //check if caller is an operatoer of that channel
     if (!search_user(channels_map, client_socket, 'o', channel_name)) {
-        std::string err = "482 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not channel operator\n";
+        std::string err = "482 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not channel operator\r\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return ;
@@ -73,12 +73,12 @@ void    server_c::mode_cmd(const std::string &buffer, const uint32_t &client_soc
 void    server_c::mode_i(std::string channel_name, uint32_t client_socket, bool set) {
     if (set) {
         channels_map[channel_name].setisinvite_only(true);
-        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +i\n";
+        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +i\r\n";
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }
     else {
-        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -i\n";
+        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -i\r\n";
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         channels_map[channel_name].setisinvite_only(false);
@@ -87,13 +87,13 @@ void    server_c::mode_i(std::string channel_name, uint32_t client_socket, bool 
 
 void    server_c::mode_t(std::string channel_name, uint32_t client_socket, bool set) {
     if (set) {
-        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +t\n";
+        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +t\r\n";
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         channels_map[channel_name].setisrestricted_topic(true);
     }
     else {
-        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -t\n";
+        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -t\r\n";
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         channels_map[channel_name].setisrestricted_topic(false);
@@ -106,14 +106,14 @@ void    server_c::mode_k(std::string channel_name, uint32_t client_socket, std::
             return ;
         channels_map[channel_name].setChannelPassword(password);
         channels_map[channel_name].setisProtected(true);
-        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +k\n";
+        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +k\r\n";
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }
     else {
         channels_map[channel_name].setChannelPassword(NULL);
         channels_map[channel_name].setisProtected(false);
-        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -k\n";
+        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -k\r\n";
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }
@@ -132,20 +132,20 @@ void    server_c::mode_o(std::string channel_name, uint32_t client_socket, std::
         }
     }
     if (!found) {
-        std::string err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + target + " :No such nick\n";
+        std::string err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + target + " :No such nick\r\n";
         if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return ;
     }
     if (!target_socket) {
-        std::string err = "441 " + clients_map[client_socket].getClient_nick() + " " + target + " " + channel_name + " :They aren't on that channel\n";
+        std::string err = "441 " + clients_map[client_socket].getClient_nick() + " " + target + " " + channel_name + " :They aren't on that channel\r\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl; 
     }
     else if (set) {
         if (!search_user(channels_map, target_socket, 'o', channel_name)) {
             channels_map[channel_name]._operators.push_back(target_socket);
-            std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +o " + target + "\n";
+            std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +o " + target + "\r\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
@@ -153,7 +153,7 @@ void    server_c::mode_o(std::string channel_name, uint32_t client_socket, std::
     else {
         if (search_user(channels_map, target_socket, 'o', channel_name)) {
             channels_map[channel_name]._operators.erase(std::find(channels_map[channel_name]._operators.begin(), channels_map[channel_name]._operators.end(), target_socket));
-            std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -o " + target + "\n";
+            std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -o " + target + "\r\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
@@ -169,12 +169,12 @@ void    server_c::mode_l(std::string channel_name, uint32_t client_socket, bool 
 
         channels_map[channel_name].setuser_limit(limit_int);
         channels_map[channel_name].setisuser_limit(true);
-        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +l\n";
+        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " +l\r\n";
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }
     else {
-        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -l\n";
+        std::string message = ":" + clients_map[client_socket].getClient_nick() + " MODE " + channel_name + " -l\r\n";
         if (send(client_socket, message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         channels_map[channel_name].setisuser_limit(false);
@@ -188,7 +188,7 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
     std::string err_msg;
 
     if (kick_Vpair[0].second == "X") {
-       err_msg = "461 " + clients_map[client_socket].getClient_nick() + " KICK :Not enough parameters\n" ;
+       err_msg = "461 " + clients_map[client_socket].getClient_nick() + " KICK :Not enough parameters\r\n" ;
        if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return;
@@ -220,7 +220,7 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                                     {
                                         if (!channels_map[channel]._members.empty()) {
                                             for (size_t i = 0; i < channels_map[channel]._members.size(); i++) {
-                                                std::string rpl_msg = ":" + clients_map[client_socket].getClient_nick() + " KICK " + channel + " " + user + " :" + comment + "\n";
+                                                std::string rpl_msg = ":" + clients_map[client_socket].getClient_nick() + " KICK " + channel + " " + user + " :" + comment + "\r\n";
                                                 if (send(channels_map[channel]._members[i], rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
                                                     std::cerr << "Error: send." << std::endl;
                                             }
@@ -240,7 +240,7 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                                 }
                             }
                             else {
-                                err_msg = "441 " + clients_map[client_socket].getClient_nick() + " " + user + " " + channel + " :They aren't on that channel\n";
+                                err_msg = "441 " + clients_map[client_socket].getClient_nick() + " " + user + " " + channel + " :They aren't on that channel\r\n";
                                 if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                                     std::cerr << "Error: send." << std::endl;
                                 return ;
@@ -248,7 +248,7 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                         }
                         if (found == false)
                         {
-                            err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
+                            err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\r\n";
                             if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                                 std::cerr << "Error: send." << std::endl;
                         }
@@ -256,19 +256,19 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
                     }
                 }
                 else {
-                    err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not channel operator\n";
+                    err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not channel operator\r\n";
                     if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                         std::cerr << "Error: send." << std::endl;
                 }
             }
             else {
-                err_msg = "442 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not on that channel\n";
+                err_msg = "442 " + clients_map[client_socket].getClient_nick() + " " + channel + " :You're not on that channel\r\n";
                 if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
         }
         else {
-            err_msg = "403 " + clients_map[client_socket].getClient_nick() + " " + channel + " :No such channel \n";
+            err_msg = "403 " + clients_map[client_socket].getClient_nick() + " " + channel + " :No such channel \r\n";
             if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
@@ -282,7 +282,7 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
 
     if(invitations[0].first == "")
     {
-        err_msg = "461 " + clients_map[client_socket].getClient_nick() + " INVITE :Not enough parameters\n" ;
+        err_msg = "461 " + clients_map[client_socket].getClient_nick() + " INVITE :Not enough parameters\r\n" ;
         if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
         return ;
@@ -302,7 +302,7 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
                     {
                         if (!search_user(channels_map, it->first, 'm', chanel))  
                         {
-                            std::string rpl_msg = "341 " + clients_map[client_socket].getClient_nick() + " " + user + " " + chanel + "\n";
+                            std::string rpl_msg = "341 " + clients_map[client_socket].getClient_nick() + " " + user + " " + chanel + "\r\n";
                             if (send(client_socket, rpl_msg.c_str(), rpl_msg.size(), 0) == -1)
                                 std::cerr << "Error: send." << std::endl;
                             channels_map[chanel]._invited.push_back(it->first);
@@ -310,34 +310,34 @@ void    server_c::invite_cmd(const std::string &buffer, const uint32_t &client_s
                         }
                         else
                         {                               
-                            err_msg = "443 " + clients_map[client_socket].getClient_nick() + " " + chanel + " " + user + " :is already on channel\n";
+                            err_msg = "443 " + clients_map[client_socket].getClient_nick() + " " + chanel + " " + user + " :is already on channel\r\n";
                             if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                                 std::cerr << "Error: send." << std::endl;
                                 return ; 
                         }
                     }
-                    err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\n";
+                    err_msg = "401 " + clients_map[client_socket].getClient_nick() + " " + user + " :No such nick\r\n";
                     if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                         std::cerr << "Error: send." << std::endl;
                 }
             }
             else
             {
-                err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :You're not channel operator\n";
+                err_msg = "482 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :You're not channel operator\r\n";
                 if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
         }
         else 
         {
-                err_msg = "442 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :You're not on that channel\n";
+                err_msg = "442 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :You're not on that channel\r\n";
                 if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
         }
     }
     else
     {
-        err_msg = "403 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :No such channel \n";
+        err_msg = "403 " + clients_map[client_socket].getClient_nick() + " " + chanel + " :No such channel \r\n";
         if (send(client_socket, err_msg.c_str(), err_msg.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }
@@ -351,7 +351,7 @@ void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_so
     std::string topic = to_pair.second;
     if (channels_map.find(channel_name) != channels_map.end()) {
         if (!search_user(channels_map, client_socket, 'm', channel_name)) {
-            std::string err = "442 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not on that channel\n";
+            std::string err = "442 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not on that channel\r\n";
             if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
@@ -360,9 +360,9 @@ void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_so
             std::string message;
 
             if (channels_map[channel_name].getTopic().empty())
-                message = "331 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No topic is set\n";
+                message = "331 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No topic is set\r\n";
             else
-                message = "332 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :" + channels_map[channel_name].getTopic() + "\n";
+                message = "332 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :" + channels_map[channel_name].getTopic() + "\r\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
@@ -370,7 +370,7 @@ void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_so
         else {
             if (channels_map[channel_name].getisrestricted_topic()) {
                 if (!search_user(channels_map, client_socket, 'o', channel_name)) {
-                    std::string err = "482 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not channel operator\n";
+                    std::string err = "482 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :You're not channel operator\r\n";
                     if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                         std::cerr << "Error: send." << std::endl;
                     return ;
@@ -378,11 +378,11 @@ void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_so
             }
             std::string message;
             if (topic == ":") {
-                message = ":" + clients_map[client_socket].getClient_nick() + " TOPIC " + channel_name + " :\n";
+                message = ":" + clients_map[client_socket].getClient_nick() + " TOPIC " + channel_name + " :\r\n";
                 channels_map[channel_name].setTopic("");
             }
             else {
-                message = ":" + clients_map[client_socket].getClient_nick() + " TOPIC " + channel_name + " :" + topic + "\n";
+                message = ":" + clients_map[client_socket].getClient_nick() + " TOPIC " + channel_name + " :" + topic + "\r\n";
                 channels_map[channel_name].setTopic(topic);
             }
             for (size_t ii = 0; ii < channels_map[channel_name]._members.size(); ii++) {
@@ -392,7 +392,7 @@ void    server_c::topic_cmd(const std::string &buffer, const uint32_t &client_so
         }
     }
     else {
-        std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No such channel\n";
+        std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No such channel\r\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }

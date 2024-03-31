@@ -8,7 +8,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
         if (cmd == "PRIVMSG")
             priv_msg(buffer, client_socket);
         else if (cmd == "PASS" || cmd == "USER") {
-            std::string message = "462 " + clients_map[client_socket].getClient_nick() + " :You may not reregister\n";
+            std::string message = "462 " + clients_map[client_socket].getClient_nick() + " :You may not reregister\r\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
@@ -19,25 +19,25 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
             if (!nickpair.first) {
                 for (std::map<uint32_t, client_c>::iterator it = clients_map.begin(); it != clients_map.end(); ++it) {
                     if (nickpair.second == clients_map[it->first].getClient_nick()) {
-                        std::string err = "433 " + nickpair.second + ":Nickname is already in use\n";
+                        std::string err = "433 " + nickpair.second + ":Nickname is already in use\r\n";
                     if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                         std::cerr << "Error: send." << std::endl;
                     return ;
                     }
                 }
-                message = ":" + clients_map[client_socket].getClient_nick() + " NICK " + nickpair.second + "\n";
+                message = ":" + clients_map[client_socket].getClient_nick() + " NICK " + nickpair.second + "\r\n";
                 clients_map[client_socket].setClient_nick(nickpair.second);
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
             else if (nickpair.first == 1){
-                message = "432 " + clients_map[client_socket].getClient_nick() + " " + nickpair.second + " :Erroneus nickname\n";
+                message = "432 " + clients_map[client_socket].getClient_nick() + " " + nickpair.second + " :Erroneus nickname\r\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
 
             }
             else if (nickpair.first == 2) {
-                message = "461 " + clients_map[client_socket].getClient_nick() + " NICK :Not enough parameters\n";
+                message = "461 " + clients_map[client_socket].getClient_nick() + " NICK :Not enough parameters\r\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
@@ -55,7 +55,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
         else if (cmd == "BOT")
             bot_cmd(buffer, client_socket);
         else if (cmd == "QUIT") {
-            std::string message = ":" + clients_map[client_socket].getClient_nick() + " QUIT :lol\n";
+            std::string message = ":" + clients_map[client_socket].getClient_nick() + " QUIT :lol\r\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
             std::cout << "#" << client_socket << " disconnected" << std::endl;
@@ -90,7 +90,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
                 std::cerr << "Error: close.";
         }
         else {
-            std::string message = "421 " + clients_map[client_socket].getClient_nick() + " " + cmd + " :Unknown command\n";
+            std::string message = "421 " + clients_map[client_socket].getClient_nick() + " " + cmd + " :Unknown command\r\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
@@ -115,22 +115,27 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
             getsockname(client_socket, (struct sockaddr *)&cl_socket_addr, &addr_len);
             clients_map[client_socket].ipaddr = inet_ntoa(cl_socket_addr.sin_addr);
 
-            std::string message = "001 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network, " + clients_map[client_socket].getClient_nick() + "!" + clients_map[client_socket].getClient_user() + "@" + clients_map[client_socket].ipaddr + "\n";
+
+            // :adrift.sg.quakenet.org 001 fg :Welcome to the QuakeNet IRC Network, fg
+            std::string message = ":" + _hostname + " 001 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network, " + clients_map[client_socket].getClient_nick() + "!" + clients_map[client_socket].getClient_user() + "@" + clients_map[client_socket].ipaddr + "\r\n";
             if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
                 std::cerr << "Error: send." << std::endl;
                 exit (1);
             }
-            message = "002 " + clients_map[client_socket].getClient_nick() + " :Your host is " + _hostname + ", running version V80.34f.2.09-0D\n";
+            // :adrift.sg.quakenet.org 002 fg :Your host is adrift.sg.quakenet.org, running version u2.10.12.10+snircd(1.3.4a)
+            message = ":" + _hostname + " 002 " + clients_map[client_socket].getClient_nick() + " :Your host is " + _hostname + ", running version V80.34f.2.09-0D\r\n";
             if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
                 std::cerr << "Error: send." << std::endl;
                 exit (1);
             }
-            message = "003 " + clients_map[client_socket].getClient_nick() + " :This server was created " + _time + "\n";
+            // :adrift.sg.quakenet.org 003 fg :This server was created Mon 3 Aug 2020 at 13:56:48 BST
+            message = ":" + _hostname + " 003 " + clients_map[client_socket].getClient_nick() + " :This server was created " + _time + "\r\n";
             if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
                 std::cerr << "Error: send." << std::endl;
                 exit (1);
             }
-            message = "004 " + clients_map[client_socket].getClient_nick() + " " + _hostname + " V80.34f.2.09-0D itkol\n";
+            // :adrift.sg.quakenet.org 004 fg adrift.sg.quakenet.org u2.10.12.10+snircd(1.3.4a) dioswkgxRXInP biklmnopstvrDcCNuMT bklov
+            message = ":" + _hostname + " 004 " + clients_map[client_socket].getClient_nick() + " " + _hostname + " V80.34f.2.09-0D itkol\r\n";
             if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
                 std::cerr << "Error: send." << std::endl;
                 exit (1);
@@ -142,6 +147,8 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
 void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_socket) {
     std::pair<std::vector<std::string>, std::string> msgpair = prvmsg_parse(buffer);
 
+    if (msgpair.second[0] == ':')
+        msgpair.second.erase(msgpair.second.begin());
     if (!msgpair.first.empty()) {
         for (size_t i = 0; i < msgpair.first.size(); i++) {
             std::vector<uint32_t> pool;
@@ -154,7 +161,7 @@ void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_soc
                         for (std::set<uint32_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
                             if (*it == client_socket)
                                 continue;
-                            std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + msgpair.first[i] + " :" + msgpair.second + "\r\n";
+                            std::string message = ":" + clients_map[client_socket].getClient_nick() + "!~" + clients_map[client_socket].getClient_user() + "@" + clients_map[client_socket].ipaddr + " PRIVMSG " + msgpair.first[i] + " :" + msgpair.second + "\r\n";
                             if (send(*it, message.c_str(), message.size(), 0) == -1)
                                 std::cerr << "Error: send." << std::endl;
                         }
@@ -195,7 +202,7 @@ void    server_c::priv_msg(const std::string &buffer, const uint32_t &client_soc
         for (std::set<uint32_t>::iterator it = betterPool.begin(); it != betterPool.end(); ++it) {
             if (*it == client_socket)
                 continue;
-            std::string message = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG " + clients_map[*it].getClient_nick() + " :" + msgpair.second + "\r\n";
+            std::string message = ":" + clients_map[client_socket].getClient_nick() + "!~" + clients_map[client_socket].getClient_user() + "@" + clients_map[client_socket].ipaddr + " PRIVMSG " + clients_map[*it].getClient_nick() + " :" + msgpair.second + "\r\n";
             if (send(*it, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
         }
@@ -211,7 +218,7 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
         if (k >= join_pair.second.size())
             k = join_pair.second.size();
         if (join_pair.first[i][0] != '#') {
-            std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :No such channel\n";
+            std::string err = "403 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :No such channel\r\n";
             if (send(client_socket, err.c_str(), err.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
             continue ;
@@ -225,13 +232,14 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
             channels_map[join_pair.first[i]].setName(join_pair.first[i]);
             channels_map[join_pair.first[i]]._members.push_back(client_socket);
             channels_map[join_pair.first[i]]._operators.push_back(client_socket);
-            message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + join_pair.first[i] + "\n";
+            //:fg!~g@197.230.30.146 JOIN #i
+            message = ":" + clients_map[client_socket].getClient_nick() + "!~@" + clients_map[client_socket].ipaddr + " JOIN " + join_pair.first[i] + "\r\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
-            message = "353 " + clients_map[client_socket].getClient_nick() + " = " + join_pair.first[i] + " :@" +clients_map[client_socket].getClient_nick() + "\n";
+            message = "353 " + clients_map[client_socket].getClient_nick() + " = " + join_pair.first[i] + " :@" +clients_map[client_socket].getClient_nick() + "\r\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                 std::cerr << "Error: send." << std::endl;
-            message = "366 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :End of /NAMES list\n";
+            message = "366 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :End of /NAMES list\r\n";
             if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
         }
@@ -239,18 +247,18 @@ void    server_c::join(const std::string &buffer, const uint32_t &client_socket)
             if (search_user(channels_map, client_socket, 'm', join_pair.first[i]))
                 ;
             else if (channels_map[join_pair.first[i]].getisinvite_only() && !search_user(channels_map, client_socket, 'i', join_pair.first[i])) {
-                message = "473 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :Cannot join channel (+i)\n";
+                message = "473 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :Cannot join channel (+i)\r\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
             else if (channels_map[join_pair.first[i]].getisuser_limit() && channels_map[join_pair.first[i]].getuser_limit() == channels_map[join_pair.first[i]].getuser_count()) {
-                message = "471 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :Cannot join channel (+l)\n";
+                message = "471 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :Cannot join channel (+l)\r\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
             else if (channels_map[join_pair.first[i]].getisProtected() && channels_map[join_pair.first[i]].getChannelPassword() != join_pair.second[k]) {
                 k++;
-                message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :Cannot join channel (+k)\n";
+                message = "475 " + clients_map[client_socket].getClient_nick() + " " + join_pair.first[i] + " :Cannot join channel (+k)\r\n";
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
             }
@@ -265,15 +273,15 @@ void    server_c::join_channel(const std::string &channel_name, const uint32_t &
 
     channels_map[channel_name]._members.push_back(client_socket);
     channels_map[channel_name].incrementUser_count();
-    message = ":" + clients_map[client_socket].getClient_nick() + " JOIN " + channel_name + "\n";
+    message = ":" + clients_map[client_socket].getClient_nick() + "!~@" + clients_map[client_socket].ipaddr + " JOIN " + channel_name + "\r\n";
     for (size_t j = 0; j < channels_map[channel_name]._members.size(); j++) {
         if (send(channels_map[channel_name]._members[j], message.c_str(), message.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl;
     }
     if (channels_map[channel_name].getTopic() == "")
-        message = "331 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No topic is set\n";
+        message = "331 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :No topic is set\r\n";
     else
-        message = "332 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :" + channels_map[channel_name].getTopic() + "\n";
+        message = "332 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :" + channels_map[channel_name].getTopic() + "\r\n";
     if (send(client_socket, message.c_str(), message.size(), 0) == -1)
         std::cerr << "Error: send." << std::endl;
     std::string users;
@@ -284,10 +292,10 @@ void    server_c::join_channel(const std::string &channel_name, const uint32_t &
         else
             users += clients_map[channels_map[channel_name]._members[j]].getClient_nick() + " ";
     }
-    message = "353 " + clients_map[client_socket].getClient_nick() + " = " + channel_name + " :" + users + "\n";
+    message = "353 " + clients_map[client_socket].getClient_nick() + " = " + channel_name + " :" + users + "\r\n";
     if (send(client_socket, message.c_str(), message.size(), 0) == -1)
         std::cerr << "Error: send." << std::endl;
-    message = "366 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :End of /NAMES list\n";
+    message = "366 " + clients_map[client_socket].getClient_nick() + " " + channel_name + " :End of /NAMES list\r\n";
     if (send(client_socket, message.c_str(), message.size(), 0) == -1)
         std::cerr << "Error: send." << std::endl;
 }
@@ -332,7 +340,7 @@ void    server_c::bot_cmd(const std::string &buffer, const uint32_t &client_sock
             message += "@";
         message += clients_map[channels_map[channel_name]._members[i]].getClient_nick() + " ";
     }
-    message1 = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG BOT :" + message + "\n";
+    message1 = ":" + clients_map[client_socket].getClient_nick() + " PRIVMSG BOT :" + message + "\r\n";
     if (send(client_socket, message1.c_str(), message1.size(), 0) == -1)
         std::cerr << "Error: send." << std::endl;
 }
