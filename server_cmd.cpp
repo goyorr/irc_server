@@ -110,11 +110,10 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
             std::cout << clients_map[client_socket].getClient_nick()  << " authenticated successfully." << std::endl;
             clients_map[client_socket].setRegistered(true);
 
-            struct sockaddr_in cl_socket_addr;
-            socklen_t addr_len = sizeof(cl_socket_addr);
-            getsockname(client_socket, (struct sockaddr *)&cl_socket_addr, &addr_len);
-            clients_map[client_socket].ipaddr = inet_ntoa(cl_socket_addr.sin_addr);
-
+            struct sockaddr_in socket_addr;
+            socklen_t addr_len = sizeof(socket_addr);
+            getsockname(client_socket, (struct sockaddr *)&socket_addr, &addr_len);
+            clients_map[client_socket].ipaddr = inet_ntoa(socket_addr.sin_addr);
 
             // :adrift.sg.quakenet.org 001 fg :Welcome to the QuakeNet IRC Network, fg
             std::string message = ":" + _hostname + " 001 " + clients_map[client_socket].getClient_nick() + " :Welcome to the ft_irc Network, " + clients_map[client_socket].getClient_nick() + "!" + clients_map[client_socket].getClient_user() + "@" + clients_map[client_socket].ipaddr + "\r\n";

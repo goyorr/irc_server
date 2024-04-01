@@ -33,6 +33,7 @@ uint32_t server_c::getServer_socket() const {
 
 void    server_c::init_server(const std::string &tmp_port, const std::string &tmp_password) {
 
+    //for IPv4
     struct      sockaddr_in socket_addr;
     int32_t     tmp_client_socket;
     int32_t     non_block;
@@ -51,12 +52,14 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
         return std::cerr << "Error: socket." << std::endl, (void)NULL;
 
     int a = 1;
-    setsockopt(tmp_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&a, sizeof(a));
+    if (setsockopt(tmp_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&a, sizeof(a)) == -1)
+        return std::cerr << "Error: setsockopt." << std::endl, (void)NULL;
 
     setServer_socket(tmp_socket);
 
     socket_addr.sin_family = AF_INET;
-    socket_addr.sin_addr.s_addr = INADDR_ANY;
+    // socket_addr.sin_addr.s_addr = INADDR_ANY;
+    socket_addr.sin_addr.s_addr = inet_addr("0.0.0.0");
     socket_addr.sin_port = htons(getPort());
 
     if (bind(getServer_socket(), (struct sockaddr*)&socket_addr, sizeof(socket_addr)) == -1)
@@ -71,10 +74,8 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     client_c::_disc[0].revents = 0;
 
     char hostname[256];
-    if (gethostname(hostname, sizeof(hostname)) == -1) {
-        std::cerr << "Error: gethostname" << std::endl;
-        return ;
-    }
+    if (gethostname(hostname, sizeof(hostname)) == -1)
+        return std::cerr << "Error: gethostname." << std::endl, (void)NULL;
     _hostname = hostname;
 
     while (true) {
@@ -100,7 +101,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
                 else {
                     try {
                         char po[1024];
-                        bytes = recv(client_c::_disc[i].fd, po, 512, 0);
+                        bytes = recv(client_c::_disc[i].fd, po, 1024, 0);
                         if (bytes == -1)
                             return std::cerr << "Error: recv." << std::endl, (void)NULL;
                         if (bytes >= 1) {
