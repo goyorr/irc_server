@@ -2,30 +2,28 @@ NAME = ircserv
 
 SRC = ${shell ls | grep ".cpp"}
 
-OBJ = ${SRC:.cpp=.o}
+HEADER = headers/channels.hpp headers/client.hpp headers/server.hpp headers/includes.h
 
-DEPS = ${SRC:.cpp=.d}
+OBJ = ${SRC:.cpp=.o}
 
 C++ = c++
 
 RM = rm -f
 
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD -MP
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98
 
 all: ${NAME}
 
 ${NAME}: ${OBJ}
 	${C++} ${OBJ} -o $@
 
--include ${DEPS}
-
-%.o: %.cpp Makefile
+%.o: %.cpp ${HEADER} Makefile
 	${C++} ${CPPFLAGS} -c $<
 
 clean:
 	${RM} ${OBJ}
 
 fclean: clean
-	${RM} ${NAME} ${DEPS}
+	${RM} ${NAME}
 
 re: fclean all
