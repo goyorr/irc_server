@@ -188,6 +188,11 @@ void    server_c::pars_port(const std::string &port) {
             exit (1);
         }
     }
+    int prt = std::atoi(port.c_str());
+    if (prt <= 0 || prt > 65535) {
+        std::cerr << "Error: invalid port!" << std::endl;
+        exit (1);
+    }
 }
 
 std::pair<std::vector<std::string>, std::string > prvmsg_parse(std::string buffer) {

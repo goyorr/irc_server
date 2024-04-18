@@ -2,7 +2,7 @@ NOTES
 
 kernel will automatically bind the socket to a suitable port number when you try to connect or send. 
 
- Sockets in C:
+Sockets in C:
 
 1. **Socket Creation:**
    - The `socket()` function is used to create a socket.
@@ -61,7 +61,7 @@ These concepts are foundational for socket programming, allowing for the creatio
 
 setsockopt()
 
-Yes, that's correct. When a socket is closed, the operating system may keep the associated port in a "time-wait" state for a certain period of time. This "time-wait" state is a mechanism used by the TCP protocol to ensure that any lingering packets related to the closed connection are properly handled and do not interfere with new connections.
+When a socket is closed, the operating system may keep the associated port in a "time-wait" state for a certain period of time. This "time-wait" state is a mechanism used by the TCP protocol to ensure that any lingering packets related to the closed connection are properly handled and do not interfere with new connections.ne
 
 During the "time-wait" state, the port remains bound to the local address, but it is not actively used for communication. Instead, it waits for any remaining packets to be processed and ensures that they are not mistaken for packets belonging to a new connection.
 

@@ -1,4 +1,5 @@
 #include "./headers/includes.h"
+#include <netdb.h>
 
 server_c::server_c() {
 }
@@ -39,7 +40,7 @@ void    server_c::init_server(const std::string &tmp_port, const std::string &tm
     int32_t     tmp_socket;
     ssize_t     bytes;
 
-    std::time_t currentTime = std::time(0);
+    std::time_t currentTime = std::time(nullptr);
     _time = std::ctime(&currentTime);
 
     signal(SIGINT, signalHandler);

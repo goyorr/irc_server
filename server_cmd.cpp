@@ -128,7 +128,7 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
                 exit (1);
             }
             // :adrift.sg.quakenet.org 003 fg :This server was created Mon 3 Aug 2020 at 13:56:48 BST
-            message = ":" + _hostname + " 003 " + clients_map[client_socket].getClient_nick() + " :This server was created " + _time + "\r\n";
+            message = ":" + _hostname + " 003 " + clients_map[client_socket].getClient_nick() + " :This server was created " + _time.substr(0, _time.size() - 1) + "\r\n";
             if (send(client_socket, message.c_str(),  message.size(), 0) == -1) {
                 std::cerr << "Error: send." << std::endl;
                 exit (1);
