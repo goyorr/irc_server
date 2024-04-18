@@ -321,7 +321,6 @@ std::string bot_pars(std::string buffer)
 void    server_c::bot_cmd(const std::string &buffer, const uint32_t &client_socket) {
 
     std::string channel_name = bot_pars(buffer);
-    // std::cout << "|" << channel_name << "|" << std::endl;
     if (channel_name.empty())
         return ;
     std::string message;

@@ -123,7 +123,7 @@ std::pair<int, std::string> regi_parse(std::string str, int flag) {
         i++;
     }
     std::string pre = str.substr(tmp, i - tmp);
-    if (strcmp(pre.c_str(), cmd.c_str())) {
+    if (pre == cmd) {
         res.first = 1; res.second = pre;
         return (res);
     }
@@ -275,6 +275,7 @@ std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::str
     while (!is_ws(buffer[pos]) && !is_end(buffer, &pos))
         pos++;
     std::string mods = buffer.substr(i, pos - i);
+    
     res.second.first = mods;
     size_t err = mods.find_first_not_of("tikol+-");
     if (err != std::string::npos) {
@@ -294,15 +295,18 @@ std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::str
             }
             j = nj;
         }
+
         while (is_ws(buffer[pos]))
             pos++;
         if (!is_end(buffer, &pos)){
             i = pos;
             while (!is_ws(buffer[pos]) && !is_end(buffer, &pos))
                 pos++;
-            std::string extra = buffer.substr(i, pos - i);
-            res.second.second = extra;
+            std::string nick = buffer.substr(i, pos - i);
+            res.second.second = nick;
         }
+        else
+            res.second.first = "xx"; // not enough param
 
     }   
     return res;

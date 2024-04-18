@@ -137,7 +137,7 @@ void    server_c::mode_o(std::string channel_name, uint32_t client_socket, std::
             std::cerr << "Error: send." << std::endl;
         return ;
     }
-    if (!target_socket) {
+    if (!search_user(channels_map, target_socket, 'm', channel_name)) {
         std::string err = "441 " + clients_map[client_socket].getClient_nick() + " " + target + " " + channel_name + " :They aren't on that channel\r\n";
         if (send(client_socket, err.c_str(), err.size(), 0) == -1)
             std::cerr << "Error: send." << std::endl; 
