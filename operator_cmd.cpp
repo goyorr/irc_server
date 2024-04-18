@@ -193,8 +193,9 @@ void    server_c::kick_cmd(const std::string &buffer, const uint32_t &client_soc
             std::cerr << "Error: send." << std::endl;
         return;
     }
-    
     std::string comment = kick_Vpair[0].first;
+    if (comment.empty())
+        comment = "For no apparent reason...";
     std::string channel = kick_Vpair[1].first;
     std::string user;
 

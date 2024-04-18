@@ -274,7 +274,6 @@ std::pair<std::string, std::pair<std::string, std::string> > parse_mode(std::str
     i = pos;
     while (!is_ws(buffer[pos]) && !is_end(buffer, &pos))
         pos++;
-    // if (is_end(buffer, &pos))
     std::string mods = buffer.substr(i, pos - i);
     res.second.first = mods;
     size_t err = mods.find_first_not_of("tikol+-");

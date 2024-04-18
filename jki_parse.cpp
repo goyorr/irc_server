@@ -171,6 +171,7 @@ std::vector<std::pair<std::string, std::string> > kick_inv(std::string buffer, i
         }
 
     }
+
     
     std::vector<std::string> sec;
 
