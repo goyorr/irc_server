@@ -93,7 +93,7 @@ std::pair<int, std::string> nick_parse(std::string str){
     std::string nick = str.substr(0, i);
     i = 0;
     while(nick[i]){
-        if (!isalnum(nick[i]) && nick[i] != '[' && nick[i] != ']' && nick[i] != '|' && nick[i] != '{' && nick[i] != '}' && nick[i] != '\'' && nick[i] != '_')
+        if (nick[i] && !isalnum(nick[i]) && nick[i] != '[' && nick[i] != ']' && nick[i] != '|' && nick[i] != '{' && nick[i] != '}' && nick[i] != '\'' && nick[i] != '_')
             nick_check.first = 1;   
         i++;
     }
@@ -123,7 +123,7 @@ std::pair<int, std::string> regi_parse(std::string str, int flag) {
         i++;
     }
     std::string pre = str.substr(tmp, i - tmp);
-    if (pre == cmd) {
+   if (strcmp(pre.c_str(), cmd.c_str())) {
         res.first = 1; res.second = pre;
         return (res);
     }
