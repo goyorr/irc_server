@@ -26,9 +26,21 @@ void    server_c::pars_cmd(const std::string &buffer, const uint32_t &client_soc
                     }
                 }
                 message = ":" + clients_map[client_socket].getClient_nick() + " NICK " + nickpair.second + "\r\n";
-                clients_map[client_socket].setClient_nick(nickpair.second);
                 if (send(client_socket, message.c_str(), message.size(), 0) == -1)
                     std::cerr << "Error: send." << std::endl;
+                for (std::map<std::string, channels_c>::iterator it = channels_map.begin(); it != channels_map.end(); it++) {
+                    if (search_user(channels_map, client_socket, 'm', it->first)) {
+                        for (size_t i = 0; i < channels_map[it->first]._members.size(); i++) {
+                            if (channels_map[it->first]._members[i] == client_socket)
+                                continue ;
+                            //:POL!~d@197.230.30.146 NICK :SHELL
+                            std::string message = ":" + clients_map[client_socket].getClient_nick() + "!~@" + clients_map[client_socket].ipaddr + " NICK :" + nickpair.second + "\r\n";
+                            if (send(channels_map[it->first]._members[i], message.c_str(), message.size(), 0) == -1)
+                                std::cerr << "Error: send." << std::endl;
+                        }
+                    }
+                }
+                clients_map[client_socket].setClient_nick(nickpair.second);
             }
             else if (nickpair.first == 1){
                 message = "432 " + clients_map[client_socket].getClient_nick() + " " + nickpair.second + " :Erroneus nickname\r\n";
