@@ -1,0 +1,3 @@
+PASS test
+NICK TEST999
+USER I 0 * I
